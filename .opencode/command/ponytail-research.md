@@ -1,0 +1,5 @@
+---
+description: Research-first, find what already solves a feature before building it
+---
+
+Research before building: $ARGUMENTS. Pin the need in one line (feature + stack + constraints). Check native platform features first, then search where it most likely exists: GitHub (gh search repos "<feature> <stack>" --sort stars), the plugin or app store for the stack (WordPress.org plugin API, Shopify App Store, npm, PyPI), and competitors' shipped products (page source, plugin zips, Electron app.asar, config files). Score each candidate: stars or installs, last update, license, tests. Read the code that implements the feature in the top one or two, not the README, and state the principle in two lines. Decide reuse, adapt, inspired by, or build, and give the smallest next step. Copy code only when its license allows it, with attribution; proprietary code teaches the principle only. Official downloads only, run nothing untrusted outside a sandbox, never bypass licensing or DRM. Output a table: Candidate | Signal | License | Fit, then Principle, Decision, Next.

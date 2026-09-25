@@ -1,395 +1,226 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
-    <img src="assets/logo.png" width="220" alt="Ponytail, the lazy senior dev">
-  </picture>
+  <img src="assets/research-first-banner.svg" width="880" alt="Ponytail Research-First: the lazy senior dev for AI coding agents who searches GitHub, plugin stores and competitors before writing code">
 </p>
 
-<h1 align="center">Ponytail</h1>
+<h1 align="center">Ponytail Research-First</h1>
 
 <p align="center">
-  <em>He says nothing. He writes one line. It works.</em>
-</p>
-
-<p align="center">
-  <a href="https://trendshift.io/repositories/50668?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-50668" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/50668" alt="DietrichGebert%2Fponytail | Trendshift" width="250" height="55"/></a>
+  <strong>Don't let your AI agent reinvent the wheel.</strong><br>
+  The lazy senior dev for Claude Code, Codex, Cursor, Kimi, Grok and ZCode, who checks GitHub, plugin stores and competitors <em>before</em> writing a single line.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/stars/DietrichGebert/ponytail?style=flat-square&color=111111&label=stars" alt="Stars">
-  <img src="https://img.shields.io/github/v/release/DietrichGebert/ponytail?style=flat-square&color=111111&label=release" alt="Release">
-  <img src="https://img.shields.io/npm/v/@dietrichgebert/ponytail?style=flat-square&color=111111&label=npm" alt="npm">
-  <img src="https://img.shields.io/badge/works%20with-20%20agents-111111?style=flat-square" alt="Works with 20 agents">
+  <a href="https://github.com/byensitmagnus/ponytail-research-first/stargazers"><img src="https://img.shields.io/github/stars/byensitmagnus/ponytail-research-first?style=flat-square&color=f7c948&label=stars" alt="GitHub stars"></a>
+  <img src="https://img.shields.io/badge/research--first-rung%207-ff8a3d?style=flat-square" alt="Research-first rung 7">
+  <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Cursor%20%C2%B7%20Kimi%20%C2%B7%20Grok%20%C2%B7%20ZCode-111111?style=flat-square" alt="Works with Claude Code, Codex, Cursor, Kimi, Grok, ZCode">
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT license">
+  <a href="https://github.com/DietrichGebert/ponytail"><img src="https://img.shields.io/badge/fork%20of-DietrichGebert%2Fponytail-111111?style=flat-square" alt="Fork of DietrichGebert/ponytail"></a>
 </p>
 
 <p align="center">
-  <a href="https://trendshift.io/repositories/50668" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/50668/daily" alt="DietrichGebert/ponytail | Trendshift" width="250" height="55"/></a>
-  <a href="https://trendshift.io/repositories/50668" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/50668/weekly" alt="DietrichGebert/ponytail | Trendshift" width="250" height="55"/></a>
-  <a href="https://trendshift.io/repositories/50668?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-50668" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/50668/monthly?language=JavaScript" alt="DietrichGebert%2Fponytail | Trendshift monthly ranking" width="250" height="55"/></a>
-</p>
-
-<p align="center">
-  <strong>~54% less code (up to 94%) &middot; ~20% cheaper &middot; ~27% faster &middot; 100% safe</strong><br>
-  <sub>Measured on real Claude Code sessions editing a real open-source repo (FastAPI + React), against the same agent with no skill. ~54% is the mean across 12 feature tasks (Haiku 4.5, n=4); it reaches 94% where an agent over-builds (a date picker) and is near zero where the code is already minimal. ponytail keeps every safety guard while a bare "write one-liners" prompt drops one. (The earlier single-shot benchmark reported 80-94% as a flat figure; against a fair agentic baseline that is the per-task ceiling, not the average.) <a href="benchmarks/results/2026-06-18-agentic.md">Full writeup</a> &middot; <a href="benchmarks/">reproduce it</a>.</sub>
-</p>
-
-<p align="center">
-  <sub><a href="README.es.md">Español</a> &middot; <a href="README.ko.md">한국어</a></sub>
+  <a href="#install">Install</a> &middot;
+  <a href="#real-example-b2b-wholesale-prices-on-woocommerce">Example</a> &middot;
+  <a href="#where-it-looks">Where it looks</a> &middot;
+  <a href="#commands">Commands</a> &middot;
+  <a href="#faq">FAQ</a>
 </p>
 
 ---
 
-<p align="center">
-  <a href="https://ponytail.dev/soon"><img src="assets/waitlist-banner.png" alt="Something's coming, join the waitlist" width="760"></a>
-</p>
+AI coding agents love to build. Ask for a B2B login with wholesale prices and you get a custom user role, a price table, a registration form and a checkout bug, while a WordPress plugin with **10,000+ active installs** already does it.
 
-## Already built with Ponytail
+**Ponytail Research-First** is a drop-in fork of [Ponytail](https://github.com/DietrichGebert/ponytail), the lazy-senior-dev skill for AI agents, with one rung added to its ladder. Before building anything bigger than a function, the agent spends a few minutes looking where the answer most likely already exists:
 
-<a href="https://theretriever.app">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/retriever-logo-dark.svg">
-    <img src="assets/retriever-logo-light.svg" height="128" alt="Retriever">
-  </picture>
-</a>
+- **GitHub**, ranked by stars
+- **Plugin and app stores**: WordPress.org, WooCommerce, Shopify App Store, npm, PyPI
+- **Competitors' shipped products**: the feature you want, already designed and battle-tested
 
----
+Then it reads the code that does the work and picks the laziest safe option: **reuse** it, **adapt** it, or **steal the principle** and write a small version of its own.
 
-You know him. Long ponytail. Oval glasses. Has been at the company longer than the version control. You show him fifty lines; he looks at them, says nothing, and replaces them with one.
+> Lazy about writing. Never lazy about looking.
 
-Ponytail puts him inside your AI agent.
-
-## Before / after
-
-You ask for a date picker. Your agent installs flatpickr, writes a wrapper component, adds a stylesheet, and starts a discussion about timezones.
-
-With ponytail:
-
-```html
-<!-- ponytail: browser has one -->
-<input type="date">
-```
-
-More survivors in [examples/](examples/).
-
-## Numbers
-
-The honest measurement is a real agent doing real work: a headless Claude Code session editing [tiangolo's full-stack-fastapi-template](https://github.com/fastapi/full-stack-fastapi-template) (a real FastAPI + React repo), scored on the `git diff` it leaves behind. Twelve feature tickets, the same agent with and without the skill, n=4, Haiku 4.5.
-
-<p align="center">
-  <img src="assets/benchmark-agentic.svg" width="860" alt="Each arm as a percent of the no-skill baseline across LOC, tokens, cost and time (Haiku 4.5). ponytail is lowest on every metric (LOC 46%, tokens 78%, cost 80%, time 73%); caveman rises above 100% on tokens, cost and time; yagni-oneliner LOC 67%. Safety, separate adversarial tier: baseline, caveman and ponytail 100%, yagni-oneliner 95%.">
-</p>
-
-| vs no-skill baseline | LOC | tokens | cost | time | safe |
-|---|--:|--:|--:|--:|--:|
-| **ponytail** | **-54%** | **-22%** | **-20%** | **-27%** | **100%** |
-| caveman (terse-prose control) | -20% | +7% | +3% | +2% | 100% |
-| "YAGNI + one-liners" prompt | -33% | -14% | -21% | -30% | 95% |
-
-ponytail is the only arm that cuts every metric, and the only one that stays fully safe while doing it. The cut is biggest where there is a real over-build trap (date picker 404 to 23 lines, color picker 287 to 23, because it reaches for a native `<input>` instead of a component) and near zero on code that is already minimal. Full method, per-task tables, and limitations: [benchmarks/results/2026-06-18-agentic.md](benchmarks/results/2026-06-18-agentic.md).
-
-<details>
-<summary><strong>Older single-shot numbers (isolated generation)</strong></summary>
-
-Five everyday tasks, three models, three arms (no skill, [caveman](https://github.com/JuliusBrussee/caveman), ponytail), ten runs, median reported. One prompt, one completion, counting lines of the answer:
-
-<p align="center">
-  <img src="assets/benchmark-3model.svg" width="860" alt="Median lines of code per arm across Haiku, Sonnet and Opus">
-</p>
-
-This showed **80-94% less code**. [#126](https://github.com/DietrichGebert/ponytail/issues/126) fairly pointed out that the bare-model baseline pads its answer with prose and options, so that gap is partly a conversational-baseline artifact. The agentic numbers above are the corrected, defensible version. Reproduce the single-shot run with `npx promptfoo eval -c benchmarks/promptfooconfig.yaml`.
-
-</details>
-
-**The rule was never "fewest tokens."** It is: write only what the task needs, and never cut validation, error handling, security, or accessibility. The code ends up small because it is necessary, not golfed. Lower cost and latency are a side effect on the models that follow the ladder; a terse reasoning model that spends thinking tokens deliberating the rungs can go the other way (on GPT-5.5 it does).
-
-## How it works
+## The ladder, now with research
 
 Before writing code, the agent stops at the first rung that holds:
 
 ```
-1. Does this need to exist?   → no: skip it (YAGNI)
-2. Already in this codebase?  → reuse it, don't rewrite
-3. Stdlib does it?            → use it
-4. Native platform feature?   → use it
-5. Installed dependency?      → use it
-6. One line?                  → one line
-7. Only then: the minimum that works
+1. Does this need to exist?     → no: skip it (YAGNI)
+2. Already in this codebase?    → reuse it, don't rewrite
+3. Stdlib does it?              → use it
+4. Native platform feature?     → use it
+5. Installed dependency?        → use it
+6. One line?                    → one line
+7. Already built out there?     → GitHub ★ · plugin stores · competitors      ← NEW
+                                   reuse | adapt | inspired by | nothing fits
+8. Only then: the minimum that works
 ```
 
-The ladder runs *after* it understands the problem, not instead of it: it reads the code the change touches and traces the real flow before picking a rung. Lazy about the solution, never about reading.
+Rung 7 only fires for feature-sized work (a feature, an integration, a subsystem) and is time-boxed to 3–5 searches. Bug fixes and one-liners never pay for it. Before the code, the agent leaves one line so you can see what it checked:
 
-Lazy, not negligent: trust-boundary validation, data-loss handling, security, and accessibility are never on the chopping block.
+```
+Research: b2bking-wholesale-for-woocommerce (10k installs, 4.9★, GPL) → reuse
+```
+
+## Real example: B2B wholesale prices on WooCommerce
+
+> "Build a B2B login where business customers sign up and see their own prices, separate from the B2C shop."
+
+Without research, an agent hand-rolls a role system, per-customer price storage, a registration flow and cart hooks: code you now maintain forever.
+
+With `/ponytail-research B2B wholesale prices, WooCommerce`:
+
+| Candidate | Signal | License | Fit |
+|---|---|---|---|
+| `woocommerce-wholesale-prices` | 20k active installs, 4.8★ (546 reviews), updated 2026-08 | GPL | wholesale role, per-role prices |
+| `b2bking-wholesale-for-woocommerce` | 10k active installs, 4.9★ (108 reviews), updated 2026-09 | GPL | B2B and B2C registration, customer groups, per-group prices |
+| GitHub `woocommerce b2b` | best repo: 1★ | mixed | nothing maintained |
+
+**Principle:** a customer group plus per-group price meta on each product; prices swap at render and in the cart, so the B2C shop stays untouched.
+**Decision:** reuse. **Next:** install on staging, create a wholesale group, price three products, test a B2C and a B2B login.
+
+The search order mattered. GitHub had nothing above one star; the WordPress.org plugin directory had two mature options. That is why rung 7 checks the store that fits your stack, not just GitHub. On Shopify it would stop even earlier, at rung 4: check the plan's native B2B features first.
+
+<sub>Signals pulled live from the WordPress.org plugin API and `gh search repos` on 2026-09-25. Numbers move; the skill re-runs the search every time.</sub>
+
+## Where it looks
+
+| Where | How | Signal it's legit |
+|---|---|---|
+| GitHub | `gh search repos "<feature> <stack>" --sort stars`, `gh search code` | stars, a push this year, a license, tests |
+| WordPress / WooCommerce | WordPress.org plugin API, then the plugin zip's PHP | active installs, rating, last update, "tested up to" |
+| Shopify | native features for your plan, App Store, [github.com/Shopify](https://github.com/Shopify) | plan features, reviews, Built for Shopify |
+| npm / PyPI | registry metadata | weekly downloads, last release, maintainers |
+| Competitor apps | page source, Electron `app.asar`, .NET assemblies, the config they write | data model, flow, UX (the principle, never the code) |
+
+Few stars is not a no: the agent reads the files that implement the feature, not the README, before it trusts them.
+
+## Never lazy about trust
+
+- Copies code only when the license allows it, and keeps the attribution. Proprietary or unlicensed code teaches the principle; it is never pasted.
+- Official download sources only. Nothing untrusted runs outside a sandbox; reading files needs no execution.
+- Never bypasses licensing, DRM, obfuscation or a site's terms.
+- Treats every new dependency as a supply-chain decision: maintainer, exact name (typosquats), install scripts.
+- Everything Ponytail already protects stays protected: input validation at trust boundaries, error handling that prevents data loss, security, accessibility.
 
 ## Install
 
-The most effort ponytail will ever ask of you:
-
-The Claude Code and Codex plugins (and the Cursor hooks) run two tiny Node.js lifecycle hooks, so `node` needs to be on your PATH (note for Nix/nvm users: it must be on the non-interactive shell's PATH). If it isn't, the skills still work, the always-on activation just stays quiet instead of erroring on every prompt.
+`node` on your PATH is the only requirement for the hook-based installs. Already running upstream Ponytail? This fork keeps the same plugin id (`ponytail@ponytail`), so it replaces it instead of stacking a second copy.
 
 ### Claude Code
 
 ```
-/plugin marketplace add DietrichGebert/ponytail
+/plugin marketplace add byensitmagnus/ponytail-research-first
 ```
 ```
 /plugin install ponytail@ponytail
 ```
-(You have to send two separate prompts for the install to work) 
 
-Same steps in the Claude Code Desktop app's Code tab: type the two `/plugin` commands above into the prompt box, or click the **+** button next to it, choose **Plugins** → **Add plugin** to browse your configured marketplaces, and manage marketplaces from **Customize** in the sidebar.
+Send them as two separate prompts. Coming from upstream: `/plugin marketplace remove ponytail` first.
 
-### Codex
+### Codex (ChatGPT)
 
 ```bash
-codex plugin marketplace add DietrichGebert/ponytail
+codex plugin marketplace add byensitmagnus/ponytail-research-first
 codex plugin add ponytail@ponytail
 ```
 
-Run `codex` and open `/hooks`, review and trust its two lifecycle hooks, and start a new thread.
-
-This same install also covers the Codex desktop app: restart the app after installing and it picks up the plugin.
-
-### GitHub Copilot CLI
-
-```bash
-copilot plugin marketplace add DietrichGebert/ponytail
-copilot plugin install ponytail@ponytail
-```
-
-In an interactive Copilot CLI session, use the slash equivalents:
-
-```
-/plugin marketplace add DietrichGebert/ponytail
-/plugin install ponytail@ponytail
-```
-
-Copilot CLI namespaces plugin commands by plugin name. For example:
-
-```text
-/ponytail:ponytail ultra
-/ponytail:ponytail-review
-```
-
-### Pi agent harness
-
-```
-pi install git:github.com/DietrichGebert/ponytail
-```
-
-### OpenCode
-
-Add to `opencode.json`:
-
-```json
-{ "plugin": ["@dietrichgebert/ponytail"] }
-```
-
-Run from a checkout instead (the plugin reuses `hooks/` and `skills/`):
-
-```json
-{ "plugin": ["./.opencode/plugins/ponytail.mjs"] }
-```
-
-Injects the ruleset every turn at the active level; adds the `/ponytail` commands (see [Commands](#commands)). OpenCode also auto-loads this repo's `AGENTS.md`, so the rules hold even without the plugin. The plugin adds the `lite/full/ultra/off` levels.
-
-The `./` path resolves against your project's `opencode.json`; to share one checkout across projects, point it at the absolute path of the `.mjs` instead (it finds its `hooks/` and `skills/` relative to its own file).
-
-### Gemini CLI
-
-```bash
-gemini extensions install https://github.com/DietrichGebert/ponytail
-```
-
-Loads the ruleset as always-on context every session and registers the `/ponytail` commands; the `skills/` ship too, activated when a task needs them.
-The Gemini adapter intentionally does not ship a root `hooks/hooks.json`: Gemini auto-loads that path, while Ponytail's lifecycle hooks use Claude/Codex event names.
-
-### Qoder
-
-Qoder auto-loads `AGENTS.md` from the repo root as always-on context, so running ponytail from a checkout works with zero setup. For per-project rules, copy [`.qoder/rules/ponytail.md`](.qoder/rules/ponytail.md) into your project's `.qoder/rules/`. The six ponytail skills (`/ponytail`, `/ponytail-review`, `/ponytail-audit`, `/ponytail-debt`, `/ponytail-gain`, `/ponytail-help`) are available via Qoder's Skill system; the plugin manifest at [`.qoder-plugin/plugin.json`](.qoder-plugin/plugin.json) points at the `skills/` directory.
-
-For full plugin-tier support (automatic mode activation + ruleset injection on every prompt), add the hooks from [`hooks/qoder-hooks.json`](hooks/qoder-hooks.json) to your `.qoder/settings.json`. Replace `PONYTAIL_DIR` with the path to your ponytail checkout. Qoder's `UserPromptSubmit` hook activates the default mode on first prompt and injects the ruleset every turn; `PreToolUse` with `task|Task` matcher injects the ruleset into subagents. Level switches (`/ponytail lite|full|ultra|off`) work automatically.
-
-### Antigravity CLI
-
-Google is renaming Gemini CLI to Antigravity CLI (the `agy` binary); the same extension installs there:
-
-```bash
-agy plugin install https://github.com/DietrichGebert/ponytail
-```
-
-It reuses this repo's `gemini-extension.json`. One difference: Antigravity converts the `/ponytail` commands into skills, so you type them into the chat (e.g. `/ponytail-review` as a message) instead of picking them from a slash menu. Until the migration completes (around June 18, 2026), `gemini extensions install` still works too. To run it as an always-on rule instead, drop the ruleset into `.agents/rules/`.
-
-### Hermes Agent
-
-```bash
-hermes plugins install DietrichGebert/ponytail --enable
-```
-
-Restart Hermes after installing. The plugin injects the active Ponytail mode before each LLM turn, registers the bundled skills as `ponytail:<skill>`, and adds `/ponytail`, `/ponytail-review`, `/ponytail-audit`, `/ponytail-debt`, `/ponytail-gain`, and `/ponytail-help`. In shared gateways, restrict `/ponytail` to trusted users with Hermes slash-command access controls; runtime mode is process-local.
-
-### CodeWhale
-
-Reads `AGENTS.md` from the project root, zero setup. Copy [`AGENTS.md`](AGENTS.md) to your project, or run `codewhale` from a checkout of this repo. That's it.
-
-### Swival
-
-Stage the collection in your library first, then add the skills you want:
-
-```bash
-swival skills add --global https://github.com/DietrichGebert/ponytail  # stage into ~/.config/swival/library
-swival skills add ponytail                                             # install the collection into this project
-swival skills add --global ponytail                                    # or activate it in every project
-```
-
-Swival also reads `AGENTS.md` from the project root and `~/.config/swival/AGENTS.md` globally, the instruction-only fallback.
-
-On the command line, use a `$` prefix to explicitly activate a skill. For example: `$ponytail-review`.
-
-### Devin CLI
-
-```bash
-devin plugins install DietrichGebert/ponytail
-```
-
-Installs ponytail as a Devin plugin; skills are available as `/ponytail:ponytail`, `/ponytail:ponytail-review`, and so on.
-
-### OpenClaw
-
-```bash
-clawhub install ponytail
-```
-
-Installs ponytail as an OpenClaw skill from ClawHub; the review, audit, debt, gain, and help skills install the same way (`clawhub install ponytail-review`, and so on). OpenClaw applies it on coding tasks and also exposes it as a `/ponytail` command. Without ClawHub, copy [`.openclaw/skills/ponytail`](.openclaw/skills/) into `~/.openclaw/skills/`.
-
-### Grok Build
-
-```bash
-grok plugin install DietrichGebert/ponytail --trust
-```
-
-Enable the plugin (off by default): `/plugins` → Plugins → Space on `ponytail`, or in `~/.grok/config.toml`:
-
-```toml
-[plugins]
-enabled = ["ponytail"]
-```
-
-Start a new session (or reload plugins). Skills show as `/ponytail`, `/ponytail-review`, `/ponytail-audit`, `/ponytail-debt`, `/ponytail-gain`, `/ponytail-help`. Verify with `grok inspect`. Grok can auto-invoke ponytail for coding tasks from its skill description; use `/ponytail` (or `/ponytail lite`, `/ponytail full`, `/ponytail ultra`) when activation needs to be explicit. Grok lifecycle hooks are not used because their SessionStart output cannot inject instructions.
-
-`AGENTS.md` still works instruction-only from a checkout without the plugin.
+Open `/hooks` in `codex`, trust the two lifecycle hooks, start a new thread. Covers the Codex desktop app too.
 
 ### Cursor
 
 ```bash
-git clone https://github.com/DietrichGebert/ponytail
-node ponytail/scripts/cursor-hooks.js install
+git clone https://github.com/byensitmagnus/ponytail-research-first
+node ponytail-research-first/scripts/cursor-hooks.js install
 ```
 
-Merges two native hooks into `~/.cursor/hooks.json` (add `--project` to write `<project>/.cursor/hooks.json` instead) and keeps any hooks you already have there. The entries run `node` from that checkout, so leave it where it is or re-run the install after moving it. Cursor reloads the file on save; open a new chat and the ruleset for your default level arrives through `sessionStart`. Send `/ponytail lite`, `/ponytail full`, `/ponytail ultra` or `/ponytail off` as a plain message to switch the level for the rest of the conversation; `/ponytail` reports it. Cursor's `subagentStart` cannot inject context, so subagents run without the ruleset, and cloud agents never fire `sessionStart`. The always-on rule (`.cursor/rules/ponytail.mdc`) and the hooks are alternatives: while the rule is in a workspace the hooks inject nothing and the mode commands answer with a notice, so delete the rule to let the hooks manage the level. Contract, verification record and limitations: [docs/cursor-hooks.md](docs/cursor-hooks.md). Uninstall: `node ponytail/scripts/cursor-hooks.js uninstall`.
+Merges two native hooks into `~/.cursor/hooks.json` and keeps the hooks you already have. Details: [docs/cursor-hooks.md](docs/cursor-hooks.md).
 
-That was it. He'd be proud. He won't say it.
+### Grok Build
 
-Active every session, with a handful of commands (see [Commands](#commands)). `/ponytail ultra` exists for when the codebase has wronged you personally. Startup and mode-change text shows the current mode.
+```bash
+grok plugin install byensitmagnus/ponytail-research-first --trust
+```
 
-Set the level for every new session with the `PONYTAIL_DEFAULT_MODE` env var (`lite`/`full`/`ultra`/`off`), or a `defaultMode` field in `~/.config/ponytail/config.json` (`%APPDATA%\ponytail\config.json` on Windows). The default is `full`.
+Enable it under `/plugins` or with `[plugins] enabled = ["ponytail"]` in `~/.grok/config.toml`.
 
-While active, the ruleset is also injected into every subagent spawned via the Agent tool. To scope that to specific agent types (say, keep it off read-only search agents), set the `PONYTAIL_SUBAGENT_MATCHER` env var to a regex tested against the subagent's `agent_type`. It is unanchored and case-insensitive: `explore|general` matches either, `^general$` is exact, and plugin agent types look like `plugin:name`. Unset means inject into every subagent (the default); an invalid regex, or a subagent whose type the platform doesn't report, also falls back to injecting.
+### ZCode
 
-Cursor (rule-only alternative to the [hooks install](#cursor)), Windsurf, Cline, GitHub Copilot Chat (the VS Code, JetBrains, and Visual Studio editor extension, not the standalone Copilot CLI covered under [Install](#install)), Aider, Kiro, Zed, CodeWhale, Swival, Qoder: copy the matching rules file from this repo ([`.cursor/rules/`](.cursor/rules/), [`.windsurf/rules/`](.windsurf/rules/), [`.clinerules/`](.clinerules/), [`.github/copilot-instructions.md`](.github/copilot-instructions.md), [`AGENTS.md`](AGENTS.md), [`.kiro/steering/`](.kiro/steering/), [`.qoder/rules/`](.qoder/rules/)).
+New in this fork: ZCode's hook runner drops any stdout that isn't JSON, so the hooks now answer it with `hookSpecificOutput`. Add to `hooks.events` in `~/.zcode/cli/config.json`:
 
-Kiro: copy `.kiro/steering/ponytail.md` to `~/.kiro/steering/` (global) or `.kiro/steering/` in your project.
+```json
+"SessionStart": [{ "matcher": "startup|resume|clear|compact", "hooks": [
+  { "type": "process", "command": "node", "args": ["/path/to/ponytail-research-first/hooks/ponytail-activate.js"], "timeoutMs": 10000 }
+]}]
+```
 
-GitHub Copilot CLI fallback (instruction-only mode): it reads `AGENTS.md` and `.github/copilot-instructions.md` in a project, or copy the rules into `~/.copilot/copilot-instructions.md` to run ponytail in every project. This path keeps always-on guidance, but does not add plugin mode switches or hooks.
+### Kimi Code
 
-VS Code with the Codex extension reads `AGENTS.md`, which this repo ships, so it works from the repo root with no setup (`~/.codex/AGENTS.md` makes Codex global).
+Kimi CLI's hooks can't inject context (its `SessionStart` output is discarded, `UserPromptSubmit` can only block), so Kimi gets the skills: link or copy `skills/*` into `~/.kimi/skills/`. Kimi then picks `ponytail` and `ponytail-research` by their descriptions.
 
-JetBrains Junie can read `AGENTS.md` once you point it there in Settings → Tools → Junie → Project Settings → Guidelines Path (it is not automatic yet). This repo ships `AGENTS.md`; `.junie/guidelines.md` is Junie's legacy path.
+### Everything else
 
-Amp (Sourcegraph) reads `AGENTS.md` from the working directory and parent directories up to `$HOME`, which this repo ships, so it works with no setup (`~/.config/amp/AGENTS.md` works globally).
-
-Jules (Google) reads `AGENTS.md` from the repository root, which this repo ships, so it picks up the ruleset with no setup.
-
-Which files map to which agent: [Agent portability](docs/agent-portability.md).
-
-### Uninstall
-
-| Host | Command |
-|------|---------|
-| Claude Code | `/plugin remove ponytail` |
-| Codex | `codex plugin remove ponytail` |
-| Devin CLI | `devin plugins remove ponytail` |
-| Grok Build | `grok plugin uninstall ponytail` |
-| Pi agent | `pi uninstall ponytail` |
-| Cursor hooks | `node scripts/cursor-hooks.js uninstall` (add `--project` for a project-level install); removes only ponytail's entries from `hooks.json` |
-| Cursor rule / Windsurf / Cline / Qoder / etc. | Delete the copied rule file |
-
-These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag (`~/.claude/.ponytail-active`, or `~/.cursor/.ponytail-active` for Cursor), `~/.config/ponytail/config.json`, ponytail's entries in `~/.cursor/hooks.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `node scripts/uninstall.js` to clean those up too. **Run it before the host remove command above** — the script is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
+Gemini CLI, OpenCode, GitHub Copilot, pi, Hermes, Qoder, Devin, Swival, OpenClaw, Windsurf, Cline, Kiro, Zed, Amp, Jules: same adapters as upstream. Take any command from the [upstream install guide](https://github.com/DietrichGebert/ponytail#install) and swap `DietrichGebert/ponytail` for `byensitmagnus/ponytail-research-first`. Instruction-only hosts read [`AGENTS.md`](AGENTS.md), which carries rung 7. File map: [docs/agent-portability.md](docs/agent-portability.md).
 
 ## Commands
 
 | Command | What it does |
 |---------|--------------|
-| `/ponytail [lite \| full \| ultra \| off]` | Set the intensity, or turn it off. No argument reports the current level. |
-| `/ponytail-review` | Review the current diff for over-engineering, hands back a delete-list. |
-| `/ponytail-audit` | Audit the whole repo for over-engineering, not just the diff. |
-| `/ponytail-debt` | Harvest the `ponytail:` shortcuts you've deferred into a ledger, so "later" doesn't become "never". |
-| `/ponytail-gain` | Show the measured impact scoreboard (less code, less cost, more speed) from the benchmark. |
-| `/ponytail-help` | Quick reference for the commands above. |
+| `/ponytail-research <feature>` | **New.** Research-first: GitHub by stars, plugin stores, competitors → a scored table and a reuse / adapt / inspired-by / build decision. |
+| `/ponytail [lite \| full \| ultra \| off]` | Set the intensity, or turn it off. |
+| `/ponytail-review` | Review the current diff for over-engineering, returns a delete-list. |
+| `/ponytail-audit` | Audit the whole repo for over-engineering. |
+| `/ponytail-debt` | Harvest deferred `ponytail:` shortcuts into a ledger. |
+| `/ponytail-gain` | Measured-impact scoreboard from the upstream benchmark. |
+| `/ponytail-help` | Quick reference. |
 
-Commands need a skill-capable host (Claude Code, Codex, Devin CLI, OpenCode, Gemini, pi, Swival, Hermes Agent, Qoder, Grok Build). In Codex they're skills, invoke with `@` (`@ponytail-review`). Cursor with the [hooks](#cursor) gets `/ponytail` level switching only, typed as a plain message. The instruction-only adapters (Cursor's rule file, Windsurf, Cline, Copilot, Kiro, Antigravity) load the always-on ruleset without the commands.
+In Codex, invoke skills with `@` (`@ponytail-research`). Set the default level with `PONYTAIL_DEFAULT_MODE` (`lite`/`full`/`ultra`/`off`) or `defaultMode` in `~/.config/ponytail/config.json` (`%APPDATA%\ponytail\config.json` on Windows).
 
-## Development
+## What this fork changes
 
-When changing the compact rule text, keep the agent copies aligned:
+| Change | Where |
+|---|---|
+| Rung 7 "Already built out there?" and the *Research first* section | [`skills/ponytail/SKILL.md`](skills/ponytail/SKILL.md), [`AGENTS.md`](AGENTS.md) and every rule copy |
+| New `/ponytail-research` skill with the full workflow | [`skills/ponytail-research/SKILL.md`](skills/ponytail-research/SKILL.md) |
+| ZCode hook support (JSON output, own state flag) | [`hooks/ponytail-runtime.js`](hooks/ponytail-runtime.js), [`tests/zcode-hooks.test.js`](tests/zcode-hooks.test.js) |
+| Drift guard: the research rule can't silently vanish from a copy | [`scripts/check-rule-copies.js`](scripts/check-rule-copies.js) |
 
-```bash
-node scripts/check-rule-copies.js
-npm test
-```
+Everything else is upstream Ponytail, merged from `DietrichGebert/ponytail` as it moves.
 
-The OpenClaw skill package (`.openclaw/skills/`) is generated from `skills/`; rerun `node scripts/build-openclaw-skills.js` after changing a skill, the test suite fails if it is stale. To publish the skills to ClawHub, run `clawhub login` once, then `node scripts/publish-openclaw-skills.js` (it publishes all six at the `package.json` version; pass `--dry-run` to preview).
+## Numbers
 
-The correctness benchmark spawns Python for email and CSV checks; `python3` is tried before `python`. CSV checks need `pandas` installed locally.
+Upstream Ponytail measured **~54% less code, ~20% lower cost, ~27% faster, 100% safe** on real Claude Code sessions editing a FastAPI + React repo ([writeup](benchmarks/results/2026-06-18-agentic.md), [reproduce](benchmarks/)). Those numbers belong to the upstream ruleset. Rung 7 is not benchmarked yet: it adds a short search to feature-sized tasks and aims to delete whole subsystems, not lines. A research-arm benchmark is the next thing to add; until then, treat it as a hypothesis with a good example.
 
 ## FAQ
 
-**Can I use it with [caveman](https://github.com/JuliusBrussee/caveman)?**
-Yes, and you should. Caveman shrinks what the agent says; ponytail shrinks what it builds. Different halves, no overlap: caveman leaves code byte-for-byte exact, ponytail stays out of the prose. Terse talk about minimal code.
+**Does research make my agent slower?**
+Only on feature-sized work, and only for 3–5 searches. A plugin you install in ten minutes beats a subsystem you debug for a week.
 
-**Does it need a config file?**
-No. An optional `~/.config/ponytail/config.json` or `PONYTAIL_DEFAULT_MODE` env var can set the default level, but nothing is required.
+**Isn't looking at competitors' code shady?**
+Reading what a product ships to you (page source, the files it installs, the config it writes) to learn how it works is ordinary engineering. Copying their code is not allowed by the rules: proprietary code teaches the principle, the agent writes its own.
 
-**What if I really need the 120-line cache class?**
-You don't. Insist anyway and he'll build it. Slowly. Correctly. While looking at you.
+**Why does it check WordPress.org before GitHub for WooCommerce?**
+Because that's where WooCommerce solutions live. Rung 7 searches where the answer most likely exists for your stack.
 
-**Does it scale?**
-The code you never wrote scales infinitely. Zero bugs, zero CVEs, 100% uptime since forever.
+**Does it work with [caveman](https://github.com/JuliusBrussee/caveman)?**
+Yes. Caveman shrinks what the agent says; Ponytail shrinks what it builds.
 
-**Why "ponytail"?**
-You know exactly why.
+**Why a fork and not a PR?**
+Research-first changes the ladder itself, which is upstream's call to make. The fork lets you use it today and keeps pulling upstream improvements.
 
-## Sponsors
+## Credits
 
-<p align="center">
-  <a href="https://greenpt.com/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/logo-greenpt-dark.svg">
-      <img src="assets/logo-greenpt.svg" width="260" alt="GreenPT">
-    </picture>
-  </a>
-</p>
+Built on [Ponytail](https://github.com/DietrichGebert/ponytail) by [Dietrich Gebert](https://github.com/DietrichGebert): the ladder, the hooks, the adapters and the benchmark are his. Translations of the upstream README: [Español](README.es.md) &middot; [한국어](README.ko.md).
 
 ## License
 
-[MIT](LICENSE). The shortest license that works.
+[MIT](LICENSE), same as upstream.
 
 ## Star History
 
-<a href="https://www.star-history.com/dietrichgebert/ponytail#history">
+<a href="https://www.star-history.com/#byensitmagnus/ponytail-research-first&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=DietrichGebert/ponytail&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=DietrichGebert/ponytail&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=DietrichGebert/ponytail&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=byensitmagnus/ponytail-research-first&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=byensitmagnus/ponytail-research-first&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=byensitmagnus/ponytail-research-first&type=Date" />
  </picture>
 </a>

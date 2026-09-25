@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 440" width="1280" height="440" role="img" aria-labelledby="t d">
+  <title id="t">Ponytail Research-First</title>
+  <desc id="d">The lazy senior dev ladder for AI coding agents, with rung 7 highlighted: already built out there? Search GitHub by stars, plugin stores and competitors before writing code.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#151b23"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f7c948"/>
+      <stop offset="1" stop-color="#ff8a3d"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1278" height="438" rx="24" fill="url(#bg)" stroke="#2d333b" stroke-width="2"/>
+
+  <g font-family="Segoe UI, -apple-system, Helvetica, Arial, sans-serif">
+    <text x="64" y="138" font-size="76" font-weight="800" fill="#f0f6fc">Ponytail</text>
+    <text x="64" y="210" font-size="56" font-weight="800" fill="url(#accent)">Research-First</text>
+    <text x="64" y="270" font-size="24" fill="#9da7b3">The lazy senior dev for your AI agent,</text>
+    <text x="64" y="302" font-size="24" fill="#9da7b3">who checks GitHub before writing a line.</text>
+    <text x="64" y="378" font-size="18" fill="#6e7781">Claude Code · Codex · Cursor · Kimi · Grok · ZCode · +more</text>
+  </g>
+
+  <g font-family="Cascadia Code, SFMono-Regular, Consolas, Menlo, monospace" font-size="19" fill="#c9d1d9">
+    <text x="690" y="84"><tspan fill="#6e7781">1</tspan>  Does this need to exist?</text>
+    <text x="690" y="120"><tspan fill="#6e7781">2</tspan>  Already in this codebase?</text>
+    <text x="690" y="156"><tspan fill="#6e7781">3</tspan>  Stdlib does it?</text>
+    <text x="690" y="192"><tspan fill="#6e7781">4</tspan>  Native platform feature?</text>
+    <text x="690" y="228"><tspan fill="#6e7781">5</tspan>  Installed dependency?</text>
+    <text x="690" y="264"><tspan fill="#6e7781">6</tspan>  One line?</text>
+    <rect x="672" y="282" width="560" height="74" rx="12" fill="#f7c948" fill-opacity="0.12" stroke="url(#accent)" stroke-width="2"/>
+    <text x="690" y="312" fill="#f7c948" font-weight="700">7  Already built out there?</text>
+    <text x="724" y="342" font-size="16" fill="#e6c36a">GitHub ★ · plugin stores · competitors</text>
+    <rect x="1150" y="294" width="64" height="26" rx="13" fill="url(#accent)"/>
+    <text x="1182" y="313" font-size="14" font-weight="700" fill="#0b0f14" text-anchor="middle">NEW</text>
+    <text x="690" y="394"><tspan fill="#6e7781">8</tspan>  Only then: the minimum that works</text>
+  </g>
+</svg>

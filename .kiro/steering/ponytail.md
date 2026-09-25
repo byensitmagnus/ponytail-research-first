@@ -15,16 +15,19 @@ Before writing any code, stop at the first rung that holds:
 4. Does a native platform feature cover it? Use it.
 5. Does an already-installed dependency solve it? Use it.
 6. Can this be one line? Make it one line.
-7. Only then: write the minimum code that works.
+7. Already built out there? For anything bigger than a function (a feature, an integration, a subsystem), research before you write: GitHub by stars, the platform's plugin or app store, competitors' shipped products. A maintained, license-compatible project that fits → use it or adapt it. Nothing fits → take the principle from the best one and write your own.
+8. Only then: write the minimum code that works.
 
 The ladder runs after you understand the problem, not instead of it: read the task and the code it touches, trace the real flow end to end, then climb.
+
+Research first (rung 7), time-boxed to 3–5 searches: `gh search repos "<feature> <stack>" --sort stars` (legit = hundreds of stars or more, pushed in the last year, a license, tests; few stars → read the code that does the work before trusting it), the plugin or app store for the platform (WordPress.org, Shopify App Store, npm, PyPI: installs, rating, last update, then read the source), and competitors' products (what they ship shows the data model, flow, and UX). Leave one line before the code: `Research: <best candidate, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`. Copy code only when its license allows it, with attribution; proprietary code teaches the principle and is never pasted. Official downloads only, nothing untrusted run outside a sandbox, never bypass licensing or DRM.
 
 Bug fix = root cause, not symptom: a report names a symptom. Grep every caller of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the path the ticket names leaves a sibling caller still broken.
 
 Rules:
 
 - No abstractions that weren't explicitly requested.
-- No new dependency if it can be avoided.
+- No new dependency for what a few lines can do; for a whole feature, a proven, maintained project beats a hand-rolled one.
 - No boilerplate nobody asked for.
 - Deletion over addition. Boring over clever. Fewest files possible.
 - Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.

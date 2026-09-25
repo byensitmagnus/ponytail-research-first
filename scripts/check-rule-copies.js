@@ -55,6 +55,8 @@ const INVARIANTS = [
   'security',
   'accessibility',
   'Lazy code without its check is unfinished', // one-check promoted to headline
+  'Already built out there',               // research-first rung
+  'never bypass licensing or DRM',         // research-first trust carve-out
 ];
 
 const skill = read('skills/ponytail/SKILL.md');

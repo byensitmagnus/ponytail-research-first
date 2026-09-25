@@ -18,6 +18,7 @@ const {
   isCodex,
   isCopilot,
   isCursor,
+  isZCode,
   setMode,
   writeHookOutput,
 } = require('./ponytail-runtime');
@@ -30,7 +31,7 @@ const mode = getDefaultMode();
 // "off" mode — skip activation entirely, don't write flag or emit rules
 if (mode === 'off') {
   clearMode();
-  const hookOutput = (isCodex || isCopilot || isCursor) ? '' : 'OK';
+  const hookOutput = (isCodex || isCopilot || isCursor || isZCode) ? '' : 'OK';
   writeHookOutput('SessionStart', 'off', hookOutput);
   process.exit(0);
 }
@@ -61,7 +62,7 @@ try {
 let output = getPonytailInstructions(mode);
 
 // 3. Detect missing statusline config — nudge Claude to help set it up
-if (!isCodex && !isCopilot && !isCursor) try {
+if (!isCodex && !isCopilot && !isCursor && !isZCode) try {
   let hasStatusline = false;
   if (fs.existsSync(settingsPath)) {
     // Strip UTF-8 BOM some editors prepend on Windows (breaks JSON.parse)

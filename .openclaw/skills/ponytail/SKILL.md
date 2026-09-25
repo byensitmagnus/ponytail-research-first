@@ -27,10 +27,12 @@ Stop at the first rung that holds:
 4. **Native platform feature covers it?** `<input type="date">` over a picker lib, CSS over JS, DB constraint over app code.
 5. **Already-installed dependency solves it?** Use it. Never add a new one for what a few lines can do.
 6. **Can it be one line?** One line.
-7. **Only then:** the minimum code that works.
+7. **Already built out there?** Anything bigger than a function (a feature, an integration, a subsystem) → research before you write: GitHub by stars, the platform's plugin or app store, competitors' shipped products. A maintained, license-compatible project that fits → use it or adapt it. Nothing fits → take the principle from the best one and write your own. See *Research first*.
+8. **Only then:** the minimum code that works.
 
-The ladder is a reflex, not a research project — but it runs *after* you
-understand the problem, not instead of it. Read the task and the code it
+The ladder is a reflex, not a research project (rung 7 is the one
+time-boxed exception, and only for work bigger than a function) — but it
+runs *after* you understand the problem, not instead of it. Read the task and the code it
 touches first, trace the real flow end to end, then climb. Two rungs work →
 take the higher one and move on. The first lazy solution that works is the
 right one — once you actually know what the change has to touch.
@@ -40,6 +42,37 @@ edit, grep every caller of the function you're about to touch. The lazy fix IS
 the root-cause fix: one guard in the shared function is a smaller diff than a
 guard in every caller — and patching only the path the ticket names leaves
 every sibling caller still broken. Fix it once, where all callers route through.
+
+## Research first (rung 7)
+
+The laziest code is code someone else already wrote, tested, and maintains.
+Before building a feature, look where it most likely already exists:
+
+- **GitHub:** `gh search repos "<feature> <stack>" --sort stars`. Legit means
+  hundreds of stars or more, a push in the last year, a license, tests. Few
+  stars? Read the code that does the work, not the README, before you trust it.
+- **Plugin and app stores:** WordPress.org, Shopify App Store, npm, PyPI, VS
+  Code Marketplace. Active installs, rating, and last update are the signal;
+  download the plugin and read its source.
+- **Competitors:** a product that already has the feature is a free spec.
+  Read what it ships (page source, an Electron `app.asar`, a plugin zip, the
+  config it writes) for the data model, flow, and UX, then write your own.
+
+Time-box it: 3–5 searches, about ten minutes. Leave one line before the code:
+`Research: <best candidate, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
+Deep version: `/ponytail-research`.
+
+Example: B2B login with wholesale prices on WooCommerce. GitHub has nothing
+legit; WordPress.org has wholesale plugins with 10k+ active installs and 4.8★.
+Install one, don't hand-roll a role and pricing system. On Shopify, check the
+native B2B features for the plan first (rung 4).
+
+Research is lazy about writing, never about trust: copy code only when its
+license allows it and keep the attribution; proprietary code teaches the
+principle, it is never pasted. Download from official sources only, run
+nothing untrusted outside a sandbox, never bypass licensing or DRM. A new
+dependency is a supply-chain decision: check the maintainer, the exact name
+(typosquats), and install scripts first.
 
 ## Rules
 

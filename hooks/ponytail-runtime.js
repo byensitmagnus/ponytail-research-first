@@ -27,6 +27,9 @@ const isQoder = !isCopilot && !isCodex && Boolean(process.env.QODER_SESSION_ID);
 // hooks next to CLAUDE_PLUGIN_ROOT, and it needs Cursor-shaped JSON either
 // way, so this check comes after the hosts with their own data dirs.
 const isCursor = !isCopilot && !isCodex && !isQoder && Boolean(process.env.CURSOR_VERSION);
+// ZCode sets ZCODE_SESSION_ID on every hook process and silently drops stdout
+// that is not a JSON object, so it needs the hookSpecificOutput shape.
+const isZCode = !isCopilot && !isCodex && !isQoder && !isCursor && Boolean(process.env.ZCODE_SESSION_ID);
 
 let stateDir = getClaudeDir();
 if (isCodex) stateDir = process.env.PLUGIN_DATA;
@@ -35,6 +38,7 @@ if (isCodex) stateDir = process.env.PLUGIN_DATA;
 if (isCopilot) stateDir = process.env.COPILOT_PLUGIN_DATA || getClaudeDir();
 if (isQoder) stateDir = path.join(os.homedir(), '.qoder');
 if (isCursor) stateDir = path.join(os.homedir(), '.cursor');
+if (isZCode) stateDir = path.join(os.homedir(), '.zcode');
 
 const statePath = path.join(stateDir, STATE_FILE);
 
@@ -95,8 +99,8 @@ function writeHookOutput(event, mode, context = '') {
     process.stdout.write(JSON.stringify(output));
     return;
   }
-  if (isQoder) {
-    // Qoder: hookSpecificOutput JSON, same shape as Codex minus systemMessage.
+  if (isQoder || isZCode) {
+    // Qoder/ZCode: hookSpecificOutput JSON, same shape as Codex minus systemMessage.
     // UserPromptSubmit additionalContext is injected into the Agent's conversation.
     const output = {};
     if (context) {
@@ -138,6 +142,7 @@ module.exports = {
   isCopilot,
   isCursor,
   isQoder,
+  isZCode,
   readMode,
   setMode,
   writeHookOutput,

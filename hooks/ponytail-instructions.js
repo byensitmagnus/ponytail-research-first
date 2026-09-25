@@ -54,7 +54,8 @@ function getFallbackInstructions(mode) {
     '4. Does a native platform feature cover it? Use it.\n' +
     '5. Does an already-installed dependency solve it? Use it.\n' +
     '6. Can this be one line? Make it one line.\n' +
-    '7. Only then: write the minimum code that works.\n\n' +
+    '7. Already built out there? For anything bigger than a function, research first: GitHub by stars, the platform\'s plugin or app store, competitors\' products. Reuse or adapt a maintained, license-compatible project; nothing fits → take the principle and write your own. Time-box it to 3-5 searches and leave one line: `Research: <candidate> → reuse | adapt | inspired by | building`.\n' +
+    '8. Only then: write the minimum code that works.\n\n' +
     'Bug fix = root cause, not symptom: grep every caller of the function you touch and fix the shared function once (a smaller diff than one guard per caller); patching only the path the ticket names leaves a sibling caller broken.\n\n' +
     '## Rules\n\n' +
     'No abstractions that were not requested. No avoidable dependencies. No boilerplate nobody asked for. ' +
@@ -67,7 +68,7 @@ function getFallbackInstructions(mode) {
     'If the explanation is longer than the code, delete the explanation. ' +
     'Explanation the user explicitly asked for is not debt, give it in full.\n\n' +
     '## When NOT to be lazy\n\n' +
-    'Never simplify away: understanding the problem (read it fully and trace the real flow before picking a rung — a small diff you do not understand is just laziness dressed up as efficiency), input validation at trust boundaries, error handling that prevents data loss, ' +
+    'Never simplify away: understanding the problem (read it fully and trace the real flow before picking a rung — a small diff you do not understand is just laziness dressed up as efficiency), license and supply-chain checks on anything you reuse (copy code only when its license allows it, never bypass licensing or DRM), input validation at trust boundaries, error handling that prevents data loss, ' +
     'security measures, accessibility basics, the calibration real hardware needs (the platform is never the spec ideal), anything the user explicitly asked to keep. ' +
     'Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind (assert-based demo/self-check or one small test file; no frameworks). Trivial one-liners need no test.\n\n' +
     '## Boundaries\n\n' +

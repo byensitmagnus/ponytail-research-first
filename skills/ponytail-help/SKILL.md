@@ -16,7 +16,7 @@ write flag files, or persist anything.
 | Level | Trigger | What change |
 |-------|---------|-------------|
 | **Lite** | `/ponytail lite` | Build what's asked, name the lazier alternative in one line. |
-| **Full** | `/ponytail` | The ladder enforced: YAGNI → stdlib → native → one line → minimum. Default. |
+| **Full** | `/ponytail` | The ladder enforced: YAGNI → stdlib → native → one line → research what's already built → minimum. Default. |
 | **Ultra** | `/ponytail ultra` | YAGNI extremist. Deletion before addition. Challenges requirements before building. |
 
 Level sticks until changed or session end.
@@ -30,11 +30,12 @@ Level sticks until changed or session end.
 | **ponytail-audit** | `/ponytail-audit` | Whole-repo over-engineering audit: ranked list of what to delete. |
 | **ponytail-debt** | `/ponytail-debt` | Harvest `ponytail:` shortcut comments into a tracked ledger. |
 | **ponytail-gain** | `/ponytail-gain` | Measured-impact scoreboard: less code, less cost, more speed. |
+| **ponytail-research** | `/ponytail-research <feature>` | Research-first: GitHub by stars, plugin stores, competitors → reuse, adapt, or build. |
 | **ponytail-help** | `/ponytail-help` | This card. |
 
-Codex uses `@ponytail`, `@ponytail-review`, and `@ponytail-help`; Claude Code
-and OpenCode use the slash-command forms above (OpenCode ships all six as
-slash commands).
+Codex uses `@ponytail`, `@ponytail-review`, `@ponytail-research`, and
+`@ponytail-help`; Claude Code and OpenCode use the slash-command forms above
+(OpenCode ships all seven as slash commands).
 
 ## Deactivate
 
@@ -68,4 +69,5 @@ If `/plugin` is not recognized, your Claude Code is out of date. Update it (`npm
 
 ## More
 
-Full docs + examples: https://github.com/DietrichGebert/ponytail
+Full docs + examples: https://github.com/byensitmagnus/ponytail-research-first
+(fork of https://github.com/DietrichGebert/ponytail)
