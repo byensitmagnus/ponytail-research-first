@@ -98,6 +98,16 @@ export function extractClaude(lines) {
   const texts = [];
   for (const x of lines) {
     if (x.type === 'attachment' && /hook/.test(x.attachment?.type || '') && JSON.stringify(x.attachment).includes('PONYTAIL')) contaminated = true;
+    // Instruction files come from the orchestrator's working folder: the only one both arms may
+    // share is the user's global CLAUDE.md. A project AGENTS.md or CLAUDE.md carrying either
+    // ladder puts one arm's rules into the other arm's context.
+    if (x.type === 'attachment' && x.attachment?.type === 'instructions') {
+      for (const f of x.attachment.files || []) {
+        if (/[\\/]\.claude[\\/]CLAUDE\.md$/i.test(f.path)) continue;
+        ev.extraInstructions = [...(ev.extraInstructions || []), f.path];
+        if (/Already built out there|Only then:\*\* the minimum code/.test(f.content || '')) contaminated = true;
+      }
+    }
     const content = x.type === 'assistant' && Array.isArray(x.message?.content) ? x.message.content : [];
     for (const b of content) {
       if (b.type === 'text') texts.push(b.text);

@@ -1,0 +1,61 @@
+[
+  {
+    "label": "run-531a5d",
+    "requirements": { "R1": "not met", "R2": "met", "R3": "met", "R4": "met", "R5": "met", "R6": "met" },
+    "requirement_notes": "R1 not met: the format table rejects real numbers before VIES is called. DE requires 11 digits (real: 9), so DE129273398 is malformed. NL requires 12 digits (real: 9 digits + B + 2), so NL810433941B01 is malformed. XI requires exactly 12 digits, so XI123456782 is malformed. AT requires 8 digits with no 'U', so real ATU numbers would also be rejected. The normalize-input check fails.\nR2 met: all 6 malformed checks pass with calls=0.\nR3 met: SOAP POST to the official https://ec.europa.eu/taxation_customs/vies/services/checkVatService. Every well-formed number that reaches VIES verifies (8/8), and the name-address and invalid checks pass.\nR4 met: 10 s AbortController, and non-OK HTTP plus SOAP faults throw and map to unverified. The busy, unavailable, network and timeout (10000 ms) checks pass.\nR5 met: uses options.fetch || globalThis.fetch, with 0 global fetch calls.\nR6 met (judged from diff.patch): every test either returns malformed before any call or passes a mockFetch. own-tests-offline passes 12/12.",
+    "integration": "partly",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json shows no searches, no pages opened, no registry look-ups and no third-party reads.",
+    "false_claims": [
+      "DECISION.md says the patterns are 'based on VIES specifications' and last.md says all 28 country codes are supported, but the DE (11 digits), NL (12 digits), XI (12 digits only) and AT (no U) patterns reject real, valid numbers."
+    ],
+    "outcome": "partial",
+    "why": "The VIES SOAP integration, the unverified fallback, options.fetch and the network-free tests all work (24/28 checks). Wrong DE, NL, XI (and AT) format patterns mark real valid numbers malformed, so R1 is not met and the claim that the patterns follow VIES specifications is false."
+  },
+  {
+    "label": "run-574afb",
+    "requirements": { "R1": "not met", "R2": "met", "R3": "not met", "R4": "met", "R5": "met", "R6": "met" },
+    "requirement_notes": "R1 not met: DE requires 11 digits, so DE129273398 is malformed. XI requires 12 digits, so XI123456782 is malformed. Every other well-formed number ends unverified, and normalize-input fails.\nR3 not met: it POSTs form-urlencoded data to https://ec.europa.eu/taxation_customs/vies/api/checkVat, which is not a VIES endpoint. The real REST endpoint is /vies/rest-api/check-vat-number and the SOAP endpoint is /vies/services/checkVatService. The check mock answers 404, so no number is ever verified, and the name-address and invalid checks fail.\nR4 met: non-OK responses, errors and the 10 s abort all return unverified. The checks pass, though trivially, because every call gets a 404.\nR5 met: 0 global fetch calls.\nR6 met (judged from diff.patch): every test that reaches verification passes a mockFetch, and the rest return malformed before any call. own-tests-offline passes 39/39.",
+    "integration": "broken",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json shows no searches, no pages opened, no registry look-ups and no third-party reads.",
+    "false_claims": [
+      "DECISION.md calls https://ec.europa.eu/taxation_customs/vies/api/checkVat 'the European Commission's official VIES REST endpoint'. It is not a VIES endpoint, and the check mock returns 404.",
+      "DECISION.md says VIES returns SOAP XML from this REST endpoint and that the code supports both. The real REST API returns JSON, and the request shape is wrong in either case.",
+      "DECISION.md and last.md say 'de129273398' and 'DE 129 273 398' all work. The DE pattern requires 11 digits and returns malformed, and the run's own test asserts DE123456789 is malformed.",
+      "last.md says 'Ready for production', yet no VAT number can ever be verified."
+    ],
+    "outcome": "fail",
+    "why": "It calls a non-existent VIES URL (.../vies/api/checkVat) with a form body, so every well-formed number ends unverified and valid, invalid, name and address never work (14/28 checks). The DE and XI patterns are also wrong, and DECISION.md misstates both the endpoint and the DE normalisation."
+  },
+  {
+    "label": "run-81d77b",
+    "requirements": { "R1": "not met", "R2": "met", "R3": "not met", "R4": "met", "R5": "met", "R6": "not met" },
+    "requirement_notes": "R1 not met: all 11 wellformed checks and normalize-input fail, because each number that is sent ends unverified. The values sent are correct (e.g. cc=NL, num=810433941B01). AT wrongly requires 9 digits with no U. The IE and XI regexes have alternation-precedence bugs, so any IE/XI string that ends in 8 or 12 digits passes.\nR3 not met: SOAP POST to http:// (not https) ec.europa.eu/taxation_customs/vies/services/checkVatService. The parser matches only an unprefixed <valid> tag, so real namespaced VIES responses yield 'Invalid VIES response' and unverified. The name-address and invalid checks fail.\nR4 met: the busy, unavailable, network and timeout checks pass.\nR5 met: 0 global fetch calls when options.fetch is given.\nR6 not met (judged from diff.patch): the test 'All EU countries - format validation' calls checkVat() on 28 well-formed numbers without options.fetch. The test 'No fetch available returns unverified' passes {fetch: undefined}, which the code turns into the global fetch (options.fetch || fetch). Both call the real VIES. They passed in own-tests-offline only because the network was blocked.",
+    "integration": "broken",
+    "dependencies": [],
+    "research_evidence": "5 real searches: 4 'gh search repos' queries ('EU VAT VIES validation nodejs javascript', 'VAT checker VIES', 'vies vat', 'vat validate javascript node') and 1 'npm search vat vies'. No pages opened, no registry look-ups and no third-party code read.",
+    "false_claims": [
+      "DECISION.md says it 'Examined candidate implementations; many either require paid APIs, sign-ups, API keys'. evidence.json shows only search listings, with no pages opened or code read.",
+      "DECISION.md says 'Mock fetch in tests (no real network calls)' and last.md says 'All 19 tests pass without hitting the real network'. Two tests fall through to the global fetch and call VIES.",
+      "DECISION.md says regex parsing is 'Sufficient for VIES responses'. It fails on the real namespaced SOAP response, so nothing is ever verified."
+    ],
+    "outcome": "fail",
+    "why": "The SOAP parser matches only an unprefixed <valid>, so every real VIES answer becomes unverified and no number is ever verified (14/28 checks), and two of its own tests call the real VIES through the global fetch. It did run real searches, but its claims that it examined candidates and that its tests are network-free are false."
+  },
+  {
+    "label": "run-a2f116",
+    "requirements": { "R1": "not met", "R2": "met", "R3": "not met", "R4": "met", "R5": "met", "R6": "met" },
+    "requirement_notes": "R1 not met: the patterns are wrong for DE (11 digits), NL (12 digits + 2 letters), ES (8-9 digits + optional letter, which rejects A28015865), XI (5-6 digits) and AT (9 digits, no U). As a result DE129273398, NL810433941B01, ESA28015865 and XI123456782 are malformed, and normalize-input fails.\nR3 not met: SOAP POST to the official https://ec.europa.eu/taxation_customs/vies/services/checkVatService. getTag() matches only unprefixed <valid>, <name> and <address>, so a real namespaced response parses as valid=false. All 7 VIES-valid numbers that reach VIES come back 'invalid' with name and address null. The invalid check passes only by accident.\nR4 met by the checks (HTTP 500, network error and 10 s timeout return unverified). A SOAP fault on HTTP 200 would still be reported as invalid.\nR5 met: it honours 'fetch' in options, with 0 global fetch calls.\nR6 met (judged from diff.patch): every verification test passes a mockFetch. 'no fetch available' passes {fetch: undefined}, which the code honours without falling back to the global fetch. own-tests-offline passes 17/17.",
+    "integration": "broken",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json shows no searches, no pages opened, no registry look-ups and no third-party reads.",
+    "false_claims": [
+      "DECISION.md says the code 'Handles both prefixed (...) and non-prefixed inputs'. Input without a country prefix returns malformed, and the run's own test asserts this.",
+      "DECISION.md says regex extraction 'is sufficient for VIES's simple, well-formed response structure'. It misses the namespaced tags and reports valid numbers as invalid.",
+      "DECISION.md and last.md claim format validation for all 27 EU members + XI. The DE, NL, ES, XI and AT patterns reject real valid numbers."
+    ],
+    "outcome": "fail",
+    "why": "Its SOAP parser ignores the namespace prefix, so real valid VAT numbers come back 'invalid', which would wrongly deny reverse charge. Its DE, NL, ES and XI patterns also reject real numbers as malformed (15/28 checks), and DECISION.md's claims about non-prefixed input and sufficient parsing are false."
+  }
+]

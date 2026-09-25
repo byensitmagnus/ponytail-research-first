@@ -1,4 +1,20 @@
 {
   "run-4b9764": "pilot/t3-node-vat__upstream__r2",
-  "run-72b494": "pilot/t3-node-vat__fork__r2"
+  "run-72b494": "pilot/t3-node-vat__fork__r2",
+  "run-8f8505": "t1-wc-b2b__fork__r1",
+  "run-a734fc": "t1-wc-b2b__fork__r2",
+  "run-6b58c2": "t1-wc-b2b__upstream__r1",
+  "run-830221": "t1-wc-b2b__upstream__r2",
+  "run-d3779c": "t2-py-fuzzy__fork__r1",
+  "run-1eef2d": "t2-py-fuzzy__fork__r2",
+  "run-b309a5": "t2-py-fuzzy__upstream__r1",
+  "run-154920": "t2-py-fuzzy__upstream__r2",
+  "run-81d77b": "t3-node-vat__fork__r1",
+  "run-574afb": "t3-node-vat__fork__r2",
+  "run-a2f116": "t3-node-vat__upstream__r1",
+  "run-531a5d": "t3-node-vat__upstream__r2",
+  "run-5fb4bf": "t4-react-grid__fork__r1",
+  "run-b38e00": "t4-react-grid__fork__r2",
+  "run-7ff6bf": "t4-react-grid__upstream__r1",
+  "run-5978ea": "t4-react-grid__upstream__r2"
 }

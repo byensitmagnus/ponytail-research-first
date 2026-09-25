@@ -1,0 +1,23 @@
+{
+  "searches": [
+    "cd C:/Users/Usmo1/[rules]-haiku/runs/t3-node-vat__[arm]__r1/work && gh search repos \"EU VAT VIES validation nodejs javascript\" --sort stars --limit 5",
+    "cd C:/Users/Usmo1/[rules]-haiku/runs/t3-node-vat__[arm]__r1/work && gh search repos \"VAT checker VIES\" --sort stars --limit 10 2>/dev/null | head -20",
+    "cd C:/Users/Usmo1/[rules]-haiku/runs/t3-node-vat__[arm]__r1/work && gh search repos \"vies vat\" --sort stars --limit 10",
+    "cd C:/Users/Usmo1/[rules]-haiku/runs/t3-node-vat__[arm]__r1/work && gh search repos \"vat validate javascript node\" --sort stars --limit 10",
+    "cd C:/Users/Usmo1/[rules]-haiku/runs/t3-node-vat__[arm]__r1/work && npm search vat vies --parseable 2>&1 | head -30"
+  ],
+  "pagesOpened": [],
+  "commands": 16,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 4,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchedBeforeFirstChange": true,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}

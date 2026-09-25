@@ -99,6 +99,12 @@ test('Claude subagent transcripts: research, contamination, forbidden tools, lea
     tool('Bash', { command: 'gh repo fork owner/repo' }),
   ]);
   assert.equal(dirty.contaminated, true);
+  const viaAgentsMd = extractClaude([{ type: 'attachment', attachment: { type: 'instructions', files: [
+    { path: 'C:\\Users\\x\\.claude\\CLAUDE.md', content: 'global rules, research nudge' },
+    { path: 'C:\\repo\\AGENTS.md', content: '7. Already built out there? research before you write' },
+  ] } }]);
+  assert.equal(viaAgentsMd.contaminated, true);
+  assert.deepEqual(viaAgentsMd.extraInstructions, ['C:\\repo\\AGENTS.md']);
   assert.deepEqual(dirty.forbiddenTools, ['Skill']);
   assert.equal(dirty.leaks.length, 1);
   assert.equal(dirty.ghWrites.length, 1);

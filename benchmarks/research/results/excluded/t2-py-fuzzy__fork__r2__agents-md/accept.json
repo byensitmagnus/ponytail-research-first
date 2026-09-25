@@ -1,0 +1,125 @@
+{
+  "task": "t2-py-fuzzy",
+  "checks": [
+    {
+      "id": "install-requirements",
+      "req": "R5",
+      "pass": true,
+      "detail": "\r\n[notice] A new release of pip is available: 25.0.1 -> 26.2.1\r\n[notice] To update, run: C:\\Users\\Usmo1\\AppData\\Local\\Temp\\t2-venv-dKzFYX\\Scripts\\python.exe -m pip install --upgrade pip\r\n"
+    },
+    {
+      "id": "own-tests",
+      "req": "R5",
+      "pass": true,
+      "detail": "........\r\n----------------------------------------------------------------------\r\nRan 8 tests in 0.074s\r\n\r\nOK\r\n"
+    },
+    {
+      "id": "import",
+      "req": "interface",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "typo:lenvo thinkpd x1 carbn",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Lenovo ThinkPad X1 Carbon Gen 11 16GB 1TB SSD Grey', 'Lenovo ThinkPad X1 Carbon Gen 11 32GB 1TB SSD Grey', 'Lenovo ThinkPad X1 Carbon Gen 12 16GB 1TB SSD Grey']"
+    },
+    {
+      "id": "typo:samsng galxy s24 ultra",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Samsung Galaxy S24 Ultra 1TB Blue', 'Samsung Galaxy S24 Ultra 1TB Black', 'Samsung Galaxy S24 Ultra 1TB White']"
+    },
+    {
+      "id": "typo:sony wh1000xm5",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Sony WH-1000XM5 Blue', 'Sony WH-1000XM5 Sand', 'Sony WH-1000XM5 Black']"
+    },
+    {
+      "id": "typo:iphone 15 pro mx",
+      "req": "R1",
+      "pass": false,
+      "detail": "['Apple iPhone 15 Pro 128GB Black', 'Apple iPhone 15 Pro 128GB Black (Refurbished Grade A)', 'Apple iPhone 15 Pro 128GB Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "typo:dell ultrashap u2723qe",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Dell UltraSharp U2723QE VESA only', 'Dell UltraSharp U2723QE with stand', 'Dell UltraSharp U3223QE VESA only']"
+    },
+    {
+      "id": "typo:macbok air 15 m3",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Apple MacBook Air 15 M3 16GB 512GB SSD Black', 'Apple MacBook Air 15 M3 16GB 512GB SSD Black (Refurbished Grade A)', 'Apple MacBook Air 15 M3 16GB 512GB SSD Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "typo:logitec mx mastr 3s",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Logitech MX Master 3S Black US layout', 'Logitech MX Master 3S Black UK layout', 'Logitech MX Master 3S White US layout']"
+    },
+    {
+      "id": "typo:oled zenbook 14 asus",
+      "req": "R1",
+      "pass": true,
+      "detail": "['ASUS ZenBook 14 OLED 16GB 512GB SSD Black', 'ASUS ZenBook 14 OLED 16GB 512GB SSD Black (Refurbished Grade A)', 'ASUS ZenBook 14 OLED 16GB 512GB SSD Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "typo:playstaton 5 slim",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Sony PlayStation 5 Slim Bundle', 'Sony PlayStation 5 Slim Standard', 'Sony PlayStation 5 Pro Bundle']"
+    },
+    {
+      "id": "typo:airpods pro2",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Apple AirPods Pro 2 Black', 'Apple AirPods Pro 2 Black (Refurbished Grade A)', 'Apple AirPods Pro 2 Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "typo:galaxy zfold 6",
+      "req": "R1",
+      "pass": false,
+      "detail": "['Samsung Galaxy S24 128GB Black', 'Samsung Galaxy S24 128GB Black (Refurbished Grade A)', 'Samsung Galaxy S24 128GB Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "typo:bose quietcomfort ultra headphone",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Bose QuietComfort Ultra Headphones Black', 'Bose QuietComfort Ultra Headphones Black (Refurbished Grade A)', 'Bose QuietComfort Ultra Headphones Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "exact:ThinkPad T14 Gen 5",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Lenovo ThinkPad T14 Gen 5 16GB 512GB SSD Black', 'Lenovo ThinkPad T14 Gen 5 16GB 512GB SSD Black (Refurbished Grade A)', 'Lenovo ThinkPad T14 Gen 5 16GB 512GB SSD Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "exact:Pixel 9 Pro",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Google Pixel 9 Pro 128GB Black', 'Google Pixel 9 Pro 128GB Black (Refurbished Grade A)', 'Google Pixel 9 Pro 128GB Black (Refurbished Grade B)']"
+    },
+    {
+      "id": "exact:Xbox Series X",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Microsoft Xbox Series X Standard', 'Microsoft Xbox Series X Standard (Refurbished Grade A)', 'Microsoft Xbox Series X Standard (Refurbished Grade B)']"
+    },
+    {
+      "id": "latency-p95",
+      "req": "R3",
+      "pass": true,
+      "detail": "p95=10.6ms over 150 queries"
+    },
+    {
+      "id": "licenses-permissive",
+      "req": "R4",
+      "pass": true,
+      "detail": "{'offenders': [], 'installed': ['rapidfuzz==3.8.1: MIT | License :: OSI Approved :: MIT License']}"
+    }
+  ]
+}

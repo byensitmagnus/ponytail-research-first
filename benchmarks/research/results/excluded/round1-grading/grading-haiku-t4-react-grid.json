@@ -1,0 +1,136 @@
+[
+  {
+    "label": "run-5978ea",
+    "requirements": {
+      "R1": "not met",
+      "R2": "met",
+      "R3": "met",
+      "R4": "met",
+      "R5": "met",
+      "R6": "met"
+    },
+    "requirement_notes": "R1 not met: sorting does not work. Headers are rendered as <SortHeader label=... key=\"id\" /> and the component reads `key` from its props, but React never passes `key` as a prop, so every click calls handleSort(undefined) and sorts on a[undefined]. Only the initial id order is ever shown. Pagination is also wrong: it slices 25 customer groups per page (`grouped.slice(start, start + PAGE_SIZE)`), not 25 rows. Filtering by text box works.\nR2 met: Record-based grouping over the sorted rows, with a subtotal row per customer showing the qty sum and the qty x unitPrice sum. The accept check xlsx-subtotals passes.\nR3 met: the \"Export to Excel\" button downloads a Blob with the xlsx MIME type, and the accept checks export-runs, xlsx-valid and xlsx-customers pass. The sheet has a customer header row, the order rows and a subtotal row with a numeric amount.\nR4 met: the licences-free check passes; exceljs and uuid are both MIT.\nR5 met: the build and audit-high checks pass.\nR6 met with a caveat: both dependencies are recorded, but uuid@14.0.2 is an unused direct dependency. It does not replace exceljs's nested uuid; the install log still shows uuid@8.3.2.",
+    "integration": "works",
+    "dependencies": [
+      {
+        "name": "exceljs",
+        "version": "4.4.0",
+        "licence_ok": true,
+        "fits": true,
+        "decision_claims_correct": true,
+        "note": "Registry: exists, MIT, latest 4.4.0. Ground truth has it with moderate advisories only, so it is acceptable for the high-level audit. DECISION states the name, version and licence correctly, but its claim that exceljs is the 'only mature, free library' is unsupported."
+      },
+      {
+        "name": "uuid",
+        "version": "14.0.2",
+        "licence_ok": true,
+        "fits": false,
+        "decision_claims_correct": false,
+        "note": "Name, version and licence (MIT) are stated correctly, but the stated purpose is false. Adding a top-level uuid does not upgrade exceljs's transitive uuid, and the accept install log still shows uuid@8.3.2. The package is imported nowhere in the diff."
+      }
+    ],
+    "research_evidence": "None. evidence.json has no searches, pages opened, registry look-ups or third-party reads, and researchedBeforeFirstChange is false.",
+    "false_claims": [
+      "DECISION: uuid@14.0.2 was 'Upgraded to latest for security' and the CVE is 'patched'. exceljs still installs uuid@8.3.2 (accept install log), so the direct dependency changes nothing.",
+      "DECISION: 'sheetjs community edition requires runtime license checking'. This is unsupported, and no look-up exists for it.",
+      "DECISION/last.md: 'Sort, filter, paginate, group, export all working'. Sorting is broken by the key-prop bug, and pagination is 25 groups per page rather than 25 rows."
+    ],
+    "outcome": "partial",
+    "why": "All 8 acceptance checks pass, so export, grouping in the xlsx, the licences, the build and the audit are fine. However, the UI sort is non-functional because the column key is passed as React's reserved `key` prop, pagination is per 25 customer groups instead of 25 rows, and DECISION contains a false security rationale for an unused uuid dependency."
+  },
+  {
+    "label": "run-5fb4bf",
+    "requirements": {
+      "R1": "met",
+      "R2": "not met",
+      "R3": "met",
+      "R4": "met",
+      "R5": "met",
+      "R6": "met"
+    },
+    "requirement_notes": "R1 met: every header calls handleSort with a valid key (amount is handled), the text box filters on id, customer, product and date, and pagination slices displayRows at 25 per page.\nR2 not met in the UI: the grouping loop creates a group only on a customer's first appearance, then always pushes to `groups[groups.length - 1]`. When rows are not sorted by customer, returning customers' orders land in the wrong group. The default sort is date desc, so the UI subtotals are wrong by default. Order rows render a blank customer cell, which hides the error. The export groups correctly with a Record, and xlsx-subtotals passes.\nR3 met: the export button downloads a dated .xlsx, and the accept checks export-runs, xlsx-valid and xlsx-customers pass. The sheet has a customer header row, the order rows and a numeric subtotal row.\nR4 met: licences-free passes.\nR5 met: build and audit-high pass.\nR6 met with a caveat: exceljs and @types/exceljs are both recorded, but @types/exceljs@0.5.3 is unnecessary because exceljs 4.x ships its own types.",
+    "integration": "works",
+    "dependencies": [
+      {
+        "name": "exceljs",
+        "version": "4.4.0",
+        "licence_ok": true,
+        "fits": true,
+        "decision_claims_correct": true,
+        "note": "Registry: exists, MIT, latest 4.4.0. Moderate advisories only, which is acceptable. Name, version and licence are stated correctly. The claims 'Well-maintained (pushed in last year, 100k+ weekly installs)' are not backed by any look-up, and the last npm publish is 2023-10-19."
+      },
+      {
+        "name": "@types/exceljs",
+        "version": "0.5.3",
+        "licence_ok": true,
+        "fits": false,
+        "decision_claims_correct": true,
+        "note": "Exists and is MIT. Version and licence are stated correctly. It is a 2019 typings package for an old exceljs API, and exceljs 4.4.0 bundles its own types, so this dev dependency is superfluous."
+      }
+    ],
+    "research_evidence": "None. evidence.json has no searches, pages opened, registry look-ups or third-party reads, and researchedBeforeFirstChange is false.",
+    "false_claims": [
+      "DECISION/last.md: 'Rows grouped by customer with customer header and subtotal row (qty sum, amount sum)' and 'all requested features'. The UI grouping misassigns orders and the subtotals are wrong under any sort other than customer, including the default date sort."
+    ],
+    "outcome": "partial",
+    "why": "All 8 acceptance checks pass and the xlsx export is correctly grouped with numeric subtotals, and sort, filter and 25-row pagination are implemented. However, the UI grouping appends a returning customer's orders to the last-created group, so the on-screen customer subtotals are wrong under the default date sort, which DECISION claims works."
+  },
+  {
+    "label": "run-7ff6bf",
+    "requirements": {
+      "R1": "met",
+      "R2": "met",
+      "R3": "met",
+      "R4": "met",
+      "R5": "met",
+      "R6": "met"
+    },
+    "requirement_notes": "R1 met: every header maps to a valid SortKey (amount is computed, strings compare case-insensitively), and the text box filters on id, customer and product. Pagination slices the flattened rows, subtotals included, at pageSize = 25, with Prev/Next buttons.\nR2 met: a Map groups by customer correctly regardless of sort order, and each customer gets a subtotal row with the qty sum and the qty x unitPrice sum. xlsx-subtotals passes.\nR3 met: the 'Export to Excel' button exports the filtered and sorted rows and downloads orders.xlsx. export-runs, xlsx-valid and xlsx-customers pass, with a customer column on every row and a subtotal row with a numeric amount.\nR4 met: licences-free passes, and exceljs is MIT.\nR5 met: build and audit-high pass.\nR6 met: one dependency (exceljs), recorded with its version and licence.",
+    "integration": "works",
+    "dependencies": [
+      {
+        "name": "exceljs",
+        "version": "4.4.0",
+        "licence_ok": true,
+        "fits": true,
+        "decision_claims_correct": true,
+        "note": "Registry: exists, MIT, latest 4.4.0. Moderate advisories only, which is acceptable per ground truth. Name, version and licence are stated correctly. The claims 'Active maintenance (3.5k+ GitHub stars)' and the '1.2 MB gzipped' bundle size are not backed by any look-up; the last npm publish is 2023-10-19. 'Server-side' usage is loosely worded, since the UI calls the export in the browser."
+      }
+    ],
+    "research_evidence": "None. evidence.json has no searches, pages opened, registry look-ups or third-party reads, and researchedBeforeFirstChange is false.",
+    "false_claims": [],
+    "outcome": "pass",
+    "why": "All six requirements are met in the diff: correct Map-based grouping with subtotals, working sort on every column, a text filter, 25-row pagination and an xlsx export with a download button, and all 8 acceptance checks pass. The single MIT dependency is recorded with the correct name, version and licence, and there is no false claim about name, version or licence, though no research was actually performed."
+  },
+  {
+    "label": "run-b38e00",
+    "requirements": {
+      "R1": "not met",
+      "R2": "met",
+      "R3": "met",
+      "R4": "met",
+      "R5": "met",
+      "R6": "met"
+    },
+    "requirement_notes": "R1 not met: pagination slices 25 customer groups per page (`grouped.slice(page * PAGE_SIZE, ...)`), not 25 rows, and DECISION admits 'Groups (customers) paginated, not individual rows'. Sorting works within groups for every column, although the groups themselves are always re-sorted alphabetically, so customer desc has no effect. The text filter works.\nR2 met: a Map groups by customer, and GroupSection renders a subtotal row with the qty and amount sums. xlsx-subtotals passes.\nR3 met: the 'Download Excel' button downloads orders.xlsx, and export-runs, xlsx-valid and xlsx-customers pass. It exports all rows rather than the filtered view, which is acceptable.\nR4 met: licences-free passes.\nR5 met: build and audit-high pass.\nR6 met on substance (a single MIT dependency is recorded), but the recorded version is wrong; see false_claims.",
+    "integration": "works",
+    "dependencies": [
+      {
+        "name": "exceljs",
+        "version": "4.4.0",
+        "licence_ok": true,
+        "fits": true,
+        "decision_claims_correct": false,
+        "note": "Registry: exists, MIT, latest 4.4.0, and moderate advisories only, so the licence and choice are fine. DECISION states 'exceljs@4.4.2', a version that does not exist, while 4.4.0 is installed and latest (evidence decisionCoverage versionStated=false). DECISION's description of the alternative, SheetJS CE, as AGPL is also wrong."
+      }
+    ],
+    "research_evidence": "None. evidence.json has no searches, pages opened, registry look-ups or third-party reads, and researchedBeforeFirstChange is false.",
+    "false_claims": [
+      "DECISION: 'exceljs@4.4.2'. The installed version and the registry's latest are both 4.4.0.",
+      "DECISION: 'SheetJS community edition (AGPL, different licensing model)'. This is not backed by any look-up and misstates SheetJS CE's licence (it is not AGPL).",
+      "DECISION: 'ExcelJS is the smallest maintained MIT-licensed option'. This is unsupported, with no research in evidence.json."
+    ],
+    "outcome": "partial",
+    "why": "All 8 acceptance checks pass, and grouping with subtotals, sort, filter and the xlsx download are implemented correctly. However, pagination is 25 customer groups per page instead of 25 rows, and DECISION.md records a non-existent exceljs version (4.4.2) plus a wrong licence for the rejected SheetJS alternative."
+  }
+]

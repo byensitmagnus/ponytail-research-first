@@ -1,0 +1,1 @@
+{"reason":"isolation: the orchestrating session ran in the fork repo, so every subagent from pair 2 on also received that folder's AGENTS.md (the fork ladder with rung 7) and project MEMORY.md as instructions, in both arms. Detected by the instructions check added afterwards; pairs 2-8 are re-run from a neutral folder."}

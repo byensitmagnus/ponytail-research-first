@@ -1,0 +1,40 @@
+{
+  "id": "t2-py-fuzzy__upstream__r1",
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 16,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 4,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "extraInstructions": [
+    "C:\\Users\\Usmo1\\Documents\\fork ponytail med github og reserech first princip\\AGENTS.md",
+    "C:\\Users\\Usmo1\\.claude\\projects\\C--Users-Usmo1-Documents-fork-ponytail-med-github-og-reserech-first-princip\\memory\\MEMORY.md"
+  ],
+  "contaminated": true,
+  "researchLine": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [
+    {
+      "eco": "pypi",
+      "name": "rapidfuzz",
+      "range": "3.8.1",
+      "resolved": "3.8.1",
+      "exists": true,
+      "license": "MIT",
+      "latest": "3.14.6"
+    }
+  ],
+  "decisionCoverage": [
+    {
+      "name": "rapidfuzz",
+      "named": true,
+      "versionStated": true,
+      "licenseStated": true
+    }
+  ],
+  "hasDecision": true
+}

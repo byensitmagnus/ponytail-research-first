@@ -1,0 +1,51 @@
+{
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 15,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 5,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [
+    {
+      "eco": "npm",
+      "name": "exceljs",
+      "range": "^4.4.0",
+      "resolved": "4.4.0",
+      "exists": true,
+      "license": "MIT",
+      "latest": "4.4.0",
+      "published": "2023-10-19T19:49:55.669Z"
+    },
+    {
+      "eco": "npm",
+      "name": "@types/exceljs",
+      "range": "^0.5.3",
+      "resolved": "0.5.3",
+      "exists": true,
+      "license": "MIT",
+      "latest": "1.3.2",
+      "published": "2019-02-13T18:46:17.553Z"
+    }
+  ],
+  "decisionCoverage": [
+    {
+      "name": "exceljs",
+      "named": true,
+      "versionStated": true,
+      "licenseStated": true
+    },
+    {
+      "name": "@types/exceljs",
+      "named": true,
+      "versionStated": true,
+      "licenseStated": true
+    }
+  ],
+  "hasDecision": true
+}

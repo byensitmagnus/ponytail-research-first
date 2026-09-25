@@ -1,0 +1,34 @@
+{
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 15,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 4,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [
+    {
+      "eco": "pypi",
+      "name": "rapidfuzz",
+      "range": "3.8.1",
+      "resolved": "3.8.1",
+      "exists": true,
+      "license": "MIT",
+      "latest": "3.14.6"
+    }
+  ],
+  "decisionCoverage": [
+    {
+      "name": "rapidfuzz",
+      "named": true,
+      "versionStated": true,
+      "licenseStated": true
+    }
+  ],
+  "hasDecision": true
+}
