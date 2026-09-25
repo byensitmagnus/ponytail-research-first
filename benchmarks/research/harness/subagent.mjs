@@ -125,16 +125,35 @@ export function extractClaude(lines) {
   };
 }
 
+// Summed over the model calls (one per message id): what the run cost, while total_tokens
+// from the task notification is only the final context size.
+function modelUsage(lines) {
+  const byId = new Map();
+  for (const l of lines) if (l.type === 'assistant' && l.message?.usage) byId.set(l.message.id, l.message.usage);
+  const sum = (k) => [...byId.values()].reduce((s, u) => s + (u[k] || 0), 0);
+  return { model_calls: byId.size, input_tokens: sum('input_tokens'), cache_read_input_tokens: sum('cache_read_input_tokens'), cache_creation_input_tokens: sum('cache_creation_input_tokens'), output_tokens: sum('output_tokens') };
+}
+
 async function finish(id, transcript, tokens, toolUses, ms) {
   const dir = path.join(ROOT, 'runs', id);
   const work = path.join(dir, 'work');
   const meta = JSON.parse(fs.readFileSync(path.join(dir, 'prepared.json'), 'utf8'));
   const raw = fs.readFileSync(transcript, 'utf8');
   const lines = raw.split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return {}; } });
+  // the task .output file is empty on Windows; the transcript is subagents/agent-<id>.jsonl
+  if (!lines.some((l) => l.type === 'user')) throw new Error(`${transcript}: no transcript lines`);
   const ev = extractClaude(lines);
+  // the orchestrator pastes prompt.txt into the Agent call; prove the subagent got exactly that text
+  const first = lines.find((l) => l.type === 'user')?.message?.content;
+  const firstText = typeof first === 'string' ? first : (first || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
+  const lf = (t) => t.replace(/\r\n/g, '\n').trim();
+  const promptMatches = lf(firstText) === lf(fs.readFileSync(path.join(dir, 'prompt.txt'), 'utf8'));
   const stamps = lines.map((l) => l.timestamp).filter(Boolean).sort();
   git(work, ['add', '-A']);
-  const numstat = git(work, ['diff', '--cached', '--numstat', 'HEAD', '--', '.', ':(exclude)*lock*', ':(exclude)*.lock']).stdout.split('\n').filter(Boolean).map((l) => l.split('\t'));
+  // diff against the baseline commit: an agent may commit its own work, which moves HEAD
+  const base = git(work, ['rev-list', '--max-parents=0', 'HEAD']).stdout.trim();
+  const agentCommits = Number(git(work, ['rev-list', '--count', 'HEAD']).stdout.trim()) - 1;
+  const numstat = git(work, ['diff', '--cached', '--numstat', base, '--', '.', ':(exclude)*lock*', ':(exclude)*.lock']).stdout.split('\n').filter(Boolean).map((l) => l.split('\t'));
   const res = path.join(RESULTS, id);
   fs.rmSync(res, { recursive: true, force: true });
   fs.mkdirSync(res, { recursive: true });
@@ -143,20 +162,21 @@ async function finish(id, transcript, tokens, toolUses, ms) {
     agent: 'Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session', transcriptFormat: 'claude-code-subagent',
     promptSha256: (await import('node:crypto')).createHash('sha256').update(fs.readFileSync(path.join(dir, 'prompt.txt'))).digest('hex'),
     started: stamps[0] || null, ended: stamps[stamps.length - 1] || null, minutes: +(Number(ms) / 60000).toFixed(2),
-    usage: { total_tokens: Number(tokens), tool_uses: Number(toolUses) },
-    contaminated: ev.contaminated, leaks: ev.leaks, forbiddenTools: ev.forbiddenTools, ghWrites: ev.ghWrites,
+    usage: { total_tokens: Number(tokens), tool_uses: Number(toolUses), ...modelUsage(lines) },
+    sharedContextSha256: (await import('node:crypto')).createHash('sha256').update(JSON.stringify(lines.filter((l) => l.attachment?.type === 'instructions').map((l) => l.attachment.files?.map((x) => x.content)))).digest('hex'),
+    promptMatches, agentCommits, contaminated: ev.contaminated, leaks: ev.leaks, forbiddenTools: ev.forbiddenTools, ghWrites: ev.ghWrites,
     diff: { files: numstat.length, added: numstat.reduce((s, l) => s + (+l[0] || 0), 0), deleted: numstat.reduce((s, l) => s + (+l[1] || 0), 0), numstat: numstat.map((l) => l.join(' ')) },
   };
   fs.writeFileSync(path.join(res, 'run.json'), JSON.stringify(run, null, 2) + '\n');
   fs.writeFileSync(path.join(res, 'events.jsonl.gz'), zlib.gzipSync(raw));
-  fs.writeFileSync(path.join(res, 'diff.patch'), git(work, ['diff', '--cached', 'HEAD', '--', '.', ':(exclude)*lock*', ':(exclude)*.lock', ':(exclude)data/*']).stdout);
+  fs.writeFileSync(path.join(res, 'diff.patch'), git(work, ['diff', '--cached', base, '--', '.', ':(exclude)*lock*', ':(exclude)*.lock', ':(exclude)data/*']).stdout);
   fs.writeFileSync(path.join(res, 'last.md'), ev.finalText);
   if (fs.existsSync(path.join(work, 'DECISION.md'))) fs.copyFileSync(path.join(work, 'DECISION.md'), path.join(res, 'DECISION.md'));
   const deps = await Promise.all(addedDeps(meta.task, work, path.join(BENCH, 'tasks', meta.task, 'fixture')).map(verify));
   const decision = fs.existsSync(path.join(res, 'DECISION.md')) ? fs.readFileSync(path.join(res, 'DECISION.md'), 'utf8') : '';
   const { finalText, ...evidence } = ev;
   fs.writeFileSync(path.join(res, 'evidence.json'), JSON.stringify({ id, ...evidence, deps, decisionCoverage: decisionCoverage(deps, decision), hasDecision: Boolean(decision) }, null, 2) + '\n');
-  console.log(`${id}: ${run.minutes} min, ${run.usage.total_tokens} tokens, +${run.diff.added} lines, searches=${ev.searches.length} pages=${ev.pagesOpened.length} registry=${ev.registryLookups.length} contaminated=${ev.contaminated} leaks=${ev.leaks.length} forbidden=${ev.forbiddenTools.length} ghWrites=${ev.ghWrites.length}`);
+  console.log(`${id}: ${run.minutes} min, ${run.usage.total_tokens} tokens, +${run.diff.added} lines, searches=${ev.searches.length} pages=${ev.pagesOpened.length} registry=${ev.registryLookups.length} promptMatches=${promptMatches} contaminated=${ev.contaminated} leaks=${ev.leaks.length} forbidden=${ev.forbiddenTools.length} ghWrites=${ev.ghWrites.length}`);
 }
 
 const [cmd, ...args] = process.argv.slice(2);
