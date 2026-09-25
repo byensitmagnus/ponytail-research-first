@@ -16,6 +16,7 @@ const EXE = process.env.CODEX_EXE;
 const TOOLS = process.env.BENCH_TOOLS || path.join(ROOT, 'tools');
 const REAL_CODEX = path.join(process.env.USERPROFILE, '.codex');
 const RESULTS = path.join(BENCH, 'results');
+const MAX_PLAN_PCT = Number(process.env.BENCH_MAX_PLAN_PCT || 98);
 const repo = path.resolve(BENCH, '..', '..');
 
 const codexVersion = () => spawnSync(EXE, ['--version'], { encoding: 'utf8' }).stdout.trim();
@@ -100,13 +101,28 @@ function usageFrom(events) {
 }
 
 function rateLimits(codexHome) {
-  // Last rate-limit snapshot Codex wrote to its session rollout (plan usage, not dollars).
+  // Newest rate-limit snapshot in session rollouts touched in the last day (plan usage, not dollars).
   const sessions = path.join(codexHome, 'sessions');
   if (!fs.existsSync(sessions)) return null;
-  let last = null;
-  const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.jsonl')) for (const line of fs.readFileSync(p, 'utf8').split('\n')) { if (line.includes('rate_limits')) { try { const j = JSON.parse(line); last = j.payload?.rate_limits || j.rate_limits || last; } catch { /* partial line */ } } } } };
+  const since = Date.now() - 24 * 3600000;
+  let best = null;
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { walk(p); continue; }
+      if (!p.endsWith('.jsonl') || fs.statSync(p).mtimeMs < since) continue;
+      for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+        if (!line.includes('rate_limits')) continue;
+        try {
+          const j = JSON.parse(line);
+          const rl = j.payload?.rate_limits;
+          if (rl?.primary && (!best || j.timestamp > best.at)) best = { at: j.timestamp, ...rl };
+        } catch { /* partial line */ }
+      }
+    }
+  };
   walk(sessions);
-  return last;
+  return best;
 }
 
 async function runOne(task, variant, rep, order) {
@@ -123,6 +139,7 @@ async function runOne(task, variant, rep, order) {
   git(work, ['init', '-q']); git(work, ['add', '-A']); git(work, ['commit', '-q', '-m', 'baseline']);
   const env = baseEnv(codexHome, work);
   const text = prompt(task);
+  const planBefore = rateLimits(REAL_CODEX)?.primary?.used_percent ?? null;
   const started = new Date();
   const child = spawn(EXE, ['exec', '--json', '--dangerously-bypass-hook-trust', '-C', work, '-o', path.join(dir, 'last.md'), '-'],
     { env, cwd: work, stdio: ['pipe', 'pipe', 'pipe'] });
@@ -132,9 +149,16 @@ async function runOne(task, variant, rep, order) {
   let stderr = '';
   child.stderr.on('data', (d) => { stderr += d; });
   let killed = false;
-  const timer = setTimeout(() => { killed = true; spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F']); }, AGENT.timeoutMin * 60000);
+  const kill = (why) => { if (!killed) { killed = why; spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F']); } };
+  const timer = setTimeout(() => kill('timeout'), AGENT.timeoutMin * 60000);
+  // Quota brake: never let the benchmark push the user's ChatGPT plan past MAX_PLAN_PCT.
+  const brake = setInterval(() => {
+    const pct = rateLimits(codexHome)?.primary?.used_percent;
+    if (pct >= MAX_PLAN_PCT) kill(`plan-quota ${pct}%`);
+  }, 20000);
   const exit = await new Promise((resolve) => child.on('close', resolve));
   clearTimeout(timer);
+  clearInterval(brake);
   await new Promise((resolve) => out.end(resolve));
   const ended = new Date();
   const events = fs.readFileSync(path.join(dir, 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return {}; } });
@@ -146,7 +170,7 @@ async function runOne(task, variant, rep, order) {
     codex: codexVersion(), model: AGENT.model, reasoning: AGENT.reasoning, sandbox: AGENT.sandbox, disabledFeatures: AGENT.disabledFeatures,
     promptSha256: crypto.createHash('sha256').update(text).digest('hex'),
     started: started.toISOString(), ended: ended.toISOString(), minutes: +((ended - started) / 60000).toFixed(2),
-    exit, killed, usage: usageFrom(events), rateLimits: rateLimits(codexHome),
+    exit, killed, usage: usageFrom(events), rateLimits: rateLimits(codexHome), planUsedPctBefore: planBefore,
     diff: { files: lines.length, added: lines.reduce((s, l) => s + (+l[0] || 0), 0), deleted: lines.reduce((s, l) => s + (+l[1] || 0), 0), numstat: lines.map((l) => l.join(' ')) },
     stderrTail: stderr.split('\n').filter((l) => !/dangerously-bypass-hook-trust|Reading additional input/.test(l)).slice(-20).join('\n'),
   };
