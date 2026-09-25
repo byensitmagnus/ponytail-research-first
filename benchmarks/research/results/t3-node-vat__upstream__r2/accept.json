@@ -1,0 +1,173 @@
+{
+  "task": "t3-node-vat",
+  "checks": [
+    {
+      "id": "install",
+      "req": "R6",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "own-tests-offline",
+      "req": "R6",
+      "pass": true,
+      "detail": "tests=12 turns unverified on timeout (0.256ms)\n✔ vies: returns unverified on network error (0.1906ms)\n✔ vies: returns unverified on VIES server error (0.1555ms)\n✔ format: accepts various EU countries (0.3162ms)\nℹ tests 12\nℹ suites 0\nℹ pass 12\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 85.5185\n"
+    },
+    {
+      "id": "exports",
+      "req": "interface",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "malformed:DK123",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for DK\"} calls=0"
+    },
+    {
+      "id": "malformed:DE12345678",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for DE\"} calls=0"
+    },
+    {
+      "id": "malformed:NL123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for NL\"} calls=0"
+    },
+    {
+      "id": "malformed:XX123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Unknown country code: XX\"} calls=0"
+    },
+    {
+      "id": "malformed:IE12",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for IE\"} calls=0"
+    },
+    {
+      "id": "malformed:empty",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Input too short\"} calls=0"
+    },
+    {
+      "id": "wellformed:IE6388047V",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"IE\",\"vatNumber\":\"6388047V\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"IE\",\"num\":\"6388047V\"}"
+    },
+    {
+      "id": "wellformed:DE129273398",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for DE\"} sent=undefined"
+    },
+    {
+      "id": "wellformed:NL810433941B01",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for NL\"} sent=undefined"
+    },
+    {
+      "id": "wellformed:EL094014201",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"EL\",\"vatNumber\":\"094014201\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"EL\",\"num\":\"094014201\"}"
+    },
+    {
+      "id": "wellformed:ESA28015865",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"ES\",\"vatNumber\":\"A28015865\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"ES\",\"num\":\"A28015865\"}"
+    },
+    {
+      "id": "wellformed:IT00488410010",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"IT\",\"vatNumber\":\"00488410010\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"IT\",\"num\":\"00488410010\"}"
+    },
+    {
+      "id": "wellformed:PL5260250995",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"PL\",\"vatNumber\":\"5260250995\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"PL\",\"num\":\"5260250995\"}"
+    },
+    {
+      "id": "wellformed:SE556703748501",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"SE\",\"vatNumber\":\"556703748501\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"SE\",\"num\":\"556703748501\"}"
+    },
+    {
+      "id": "wellformed:BE0403170701",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"BE\",\"num\":\"0403170701\"}"
+    },
+    {
+      "id": "wellformed:LU26375245",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"LU\",\"vatNumber\":\"26375245\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"soap\",\"cc\":\"LU\",\"num\":\"26375245\"}"
+    },
+    {
+      "id": "wellformed:XI123456782",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT format for XI\"} sent=undefined"
+    },
+    {
+      "id": "normalize-input",
+      "req": "R1",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "id": "name-address",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"}"
+    },
+    {
+      "id": "invalid",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"status\":\"invalid\",\"valid\":false,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"name\":\"---\",\"address\":\"---\"}"
+    },
+    {
+      "id": "unverified:busy",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"VIES service returned 500\"}"
+    },
+    {
+      "id": "unverified:unavailable",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"VIES service returned 500\"}"
+    },
+    {
+      "id": "unverified:network",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"VIES service unavailable\"}"
+    },
+    {
+      "id": "unverified:timeout",
+      "req": "R4",
+      "pass": true,
+      "detail": "10000ms {\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"VIES service timeout\"}"
+    },
+    {
+      "id": "uses-options-fetch",
+      "req": "R5",
+      "pass": true,
+      "detail": "global fetch calls: 0"
+    }
+  ]
+}

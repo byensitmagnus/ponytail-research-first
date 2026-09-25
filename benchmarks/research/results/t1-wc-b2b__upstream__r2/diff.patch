@@ -1,0 +1,158 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..a6d7656
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,50 @@
++# B2B Implementation Decisions
++
++## Architecture
++
++**B2B Pricing Solution**: Custom mu-plugin (`wp-content/mu-plugins/b2b.php`)
++
++### Why no external plugins?
++
++Reviewed options for B2B registration fields and tiered pricing:
++- WooCommerce natively supports custom registration fields via `woocommerce_register_form_end` hook
++- WooCommerce pricing filters (`woocommerce_product_get_price`) allow per-user pricing
++- No established free WordPress.org plugin covers both requirements well (most paid-tier features)
++- Custom mu-plugin is 100 lines, testable, no dependencies, fully under our control
++
++### Implementation approach (ponytail lazy):
++
++1. **Registration fields**: Hook into WooCommerce registration form to add company name and VAT number fields
++2. **Field persistence**: Save as user meta on registration via `woocommerce_created_customer` hook
++3. **B2B approval workflow**: Simple user meta flag (`b2b_approved`) set by admin code or direct meta updates
++4. **Dynamic pricing**: Hook `woocommerce_product_get_price` to return B2B price (stored as `_b2b_price` product meta) when:
++   - User is logged in
++   - User has `b2b_approved` meta flag set to 1
++5. **Demo setup**: Blueprint.json creates three test customers:
++   - `b2c`: Normal B2C customer (no B2B fields, no approval)
++   - `b2b_pending`: Applied for B2B (has company/VAT meta, not approved yet)
++   - `b2b_approved`: Approved B2B customer (has company/VAT meta + approval flag)
++
++## Third-party dependencies
++
++**None**. Solution uses only:
++- WooCommerce 11.1.2 (already required)
++- WordPress hooks and filters (core)
++- User meta API (core)
++- Product meta API (core)
++
++No paid plugins, premium tiers, or add-ons.
++
++## Product setup
++
++Office Chair product in blueprint:
++- Regular price: 1000 EUR (for guests, B2C, and unapproved B2B)
++- B2B price meta: 800 EUR (applied only to approved B2B customers)
++
++## Known simplifications
++
++- **No admin UI for B2B management**: Approval done via direct meta updates in blueprint or admin code. For production, could add a WooCommerce admin page via custom code.
++- **No email notifications**: B2B applications don't trigger emails. Could add via `updated_user_meta` hook if needed.
++- **No expiration on approval**: Once approved, customer stays approved indefinitely. No automated revocation.
++
++Mark for future expansion: `ponytail: admin UI, email notifications, approval expiry if scaled`
+diff --git a/staging/blueprint.json b/staging/blueprint.json
+index b014190..20c1952 100644
+--- a/staging/blueprint.json
++++ b/staging/blueprint.json
+@@ -22,7 +22,7 @@
+     },
+     {
+       "step": "runPHP",
+-      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); flush_rewrite_rules();"
++      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $pid = $p->save(); update_post_meta($pid, '_b2b_price', '800'); wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); $b2b_pending = wp_insert_user(array('user_login' => 'b2b_pending', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2b_pending@example.test', 'role' => 'customer')); update_user_meta($b2b_pending, 'b2b_company_name', 'Test Company'); update_user_meta($b2b_pending, 'b2b_vat_number', 'DE123456789'); $b2b_approved = wp_insert_user(array('user_login' => 'b2b_approved', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2b_approved@example.test', 'role' => 'customer')); update_user_meta($b2b_approved, 'b2b_company_name', 'Approved Company'); update_user_meta($b2b_approved, 'b2b_vat_number', 'DE987654321'); update_user_meta($b2b_approved, 'b2b_approved', 1); flush_rewrite_rules();"
+     }
+   ]
+ }
+diff --git a/wp-content/mu-plugins/b2b.php b/wp-content/mu-plugins/b2b.php
+new file mode 100644
+index 0000000..fd68c42
+--- /dev/null
++++ b/wp-content/mu-plugins/b2b.php
+@@ -0,0 +1,83 @@
++<?php
++/**
++ * Plugin Name: B2B Pricing
++ * Description: B2B customer support with approval workflow and tiered pricing
++ * Version: 1.0.0
++ */
++
++if (!defined('ABSPATH')) exit;
++
++class B2B_Manager {
++  const META_COMPANY = 'b2b_company_name';
++  const META_VAT = 'b2b_vat_number';
++  const META_APPROVED = 'b2b_approved';
++  const B2B_PRICE_META = '_b2b_price';
++
++  public function __construct() {
++    // Registration form fields
++    add_action('woocommerce_register_form_end', [$this, 'add_registration_fields']);
++    // Save custom fields on registration
++    add_action('woocommerce_created_customer', [$this, 'save_registration_fields']);
++    // Apply B2B pricing filter
++    add_filter('woocommerce_product_get_price', [$this, 'apply_b2b_price'], 10, 2);
++    add_filter('woocommerce_product_variation_get_price', [$this, 'apply_b2b_price'], 10, 2);
++  }
++
++  public function add_registration_fields() {
++    ?>
++    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++      <label for="reg_b2b_company"><?php esc_html_e('Company Name (optional)', 'woocommerce'); ?></label>
++      <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="b2b_company_name" id="reg_b2b_company" value="<?php echo isset($_POST['b2b_company_name']) ? esc_attr($_POST['b2b_company_name']) : ''; ?>" />
++    </p>
++    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++      <label for="reg_b2b_vat"><?php esc_html_e('VAT Number (optional)', 'woocommerce'); ?></label>
++      <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="b2b_vat_number" id="reg_b2b_vat" value="<?php echo isset($_POST['b2b_vat_number']) ? esc_attr($_POST['b2b_vat_number']) : ''; ?>" />
++    </p>
++    <?php
++  }
++
++  public function save_registration_fields($customer_id) {
++    if (isset($_POST['b2b_company_name'])) {
++      update_user_meta($customer_id, self::META_COMPANY, sanitize_text_field($_POST['b2b_company_name']));
++    }
++    if (isset($_POST['b2b_vat_number'])) {
++      update_user_meta($customer_id, self::META_VAT, sanitize_text_field($_POST['b2b_vat_number']));
++    }
++  }
++
++  public function apply_b2b_price($price, $product) {
++    // Only apply if user is logged in and approved for B2B
++    $user_id = get_current_user_id();
++    if (!$user_id) return $price;
++
++    // Check if user is approved for B2B
++    $is_approved = get_user_meta($user_id, self::META_APPROVED, true);
++    if (!$is_approved) return $price;
++
++    // Get B2B price from product meta
++    $b2b_price = $product->get_meta(self::B2B_PRICE_META);
++    if ($b2b_price && $b2b_price !== '') {
++      return (float) $b2b_price;
++    }
++
++    return $price;
++  }
++
++  public static function get_user_b2b_info($user_id) {
++    return [
++      'company' => get_user_meta($user_id, self::META_COMPANY, true),
++      'vat' => get_user_meta($user_id, self::META_VAT, true),
++      'approved' => (bool) get_user_meta($user_id, self::META_APPROVED, true),
++    ];
++  }
++
++  public static function approve_b2b_customer($user_id) {
++    update_user_meta($user_id, self::META_APPROVED, 1);
++  }
++
++  public static function unapprove_b2b_customer($user_id) {
++    delete_user_meta($user_id, self::META_APPROVED);
++  }
++}
++
++new B2B_Manager();

@@ -1,0 +1,19 @@
+{
+  "id": "t3-node-vat__fork__r2",
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 7,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 8,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchLine": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}

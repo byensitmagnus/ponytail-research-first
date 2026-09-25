@@ -1,0 +1,21 @@
+{
+  "id": "t1-wc-b2b__fork__r2",
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 13,
+  "commandFailures": 0,
+  "registryLookups": [
+    "gh search repos \"B2B WooCommerce wordpress\" --sort stars --limit 5 2>/dev/null | head -20"
+  ],
+  "thirdPartyReads": [],
+  "fileChanges": 3,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": true,
+  "researchLine": false,
+  "researchedBeforeFirstChange": true,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}

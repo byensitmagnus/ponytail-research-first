@@ -1,0 +1,41 @@
+{
+  "id": "t3-node-vat__upstream__r2",
+  "task": "t3-node-vat",
+  "variant": "upstream",
+  "rep": 2,
+  "order": 1,
+  "launch": 1,
+  "variantSha": "e3ba2aa",
+  "agent": "Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session",
+  "transcriptFormat": "claude-code-subagent",
+  "promptSha256": "91eac65c0e8294e9ac47cb8f94ba1a9c913d6f1c483802425c6271a91bd2dd1f",
+  "started": "2026-09-25T17:25:44.199Z",
+  "ended": "2026-09-25T17:28:48.984Z",
+  "minutes": 3.08,
+  "usage": {
+    "total_tokens": 72592,
+    "tool_uses": 23,
+    "model_calls": 25,
+    "input_tokens": 204,
+    "cache_read_input_tokens": 1473095,
+    "cache_creation_input_tokens": 71926,
+    "output_tokens": 15351
+  },
+  "sharedContextSha256": "d16cd9a035d38514e9c1fde8b1222ab86cd4a2f29d98c1f7e2aa2c9224382915",
+  "promptMatches": true,
+  "agentCommits": 1,
+  "contaminated": false,
+  "leaks": [],
+  "forbiddenTools": [],
+  "ghWrites": [],
+  "diff": {
+    "files": 3,
+    "added": 366,
+    "deleted": 1,
+    "numstat": [
+      "40 0 DECISION.md",
+      "176 1 src/vat.js",
+      "150 0 test/vat.test.js"
+    ]
+  }
+}

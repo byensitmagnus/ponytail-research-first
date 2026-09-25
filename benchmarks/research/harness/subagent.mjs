@@ -2,7 +2,7 @@
 // The subagents themselves are spawned by the orchestrating Claude Code session; this script
 // prepares their working folders and prompts, and turns their transcripts into results.
 //   node subagent.mjs rules                 what each arm's SessionStart hook injects (Claude Code form)
-//   node subagent.mjs prepare <pair order>  both runs of a plan() pair: folders, git baseline, prompts
+//   node subagent.mjs prepare <pair order> [arm]  both runs of a plan() pair (or one arm): folders, git baseline, prompts
 //   node subagent.mjs finish <id> <transcript.jsonl> <total_tokens> <tool_uses> <duration_ms>
 // Env: BENCH_ROOT (default %USERPROFILE%\ponytail-haiku), VARIANTS_ROOT (default %USERPROFILE%\ponytail-bench).
 import fs from 'node:fs';
@@ -60,10 +60,11 @@ export function buildPrompt(task, arm, work) {
   ].join('\n');
 }
 
-function prepare(order) {
+function prepare(order, only) {
   const p = plan().find((x) => x.order === Number(order));
   const arms = [p.first, p.first === 'upstream' ? 'fork' : 'upstream'];
-  const out = arms.map((arm) => {
+  // `only`: re-prepare one arm (a contaminated re-run) without touching its running partner
+  const out = arms.filter((arm) => !only || arm === only).map((arm) => {
     const id = runId(p.task, arm, p.rep);
     const dir = path.join(ROOT, 'runs', id);
     const work = path.join(dir, 'work');
@@ -181,6 +182,6 @@ async function finish(id, transcript, tokens, toolUses, ms) {
 
 const [cmd, ...args] = process.argv.slice(2);
 if (cmd === 'rules') rules();
-else if (cmd === 'prepare') prepare(args[0]);
+else if (cmd === 'prepare') prepare(args[0], args[1]);
 else if (cmd === 'finish') await finish(...args);
 else if (process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]))) console.log('usage: node subagent.mjs rules | prepare <pair> | finish <id> <transcript> <tokens> <toolUses> <ms>');

@@ -1,0 +1,389 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..1d65876
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,40 @@
++# Implementation decisions for checkVat
++
++## Dependencies added
++None. The implementation uses only Node.js 20+ built-in APIs.
++
++## Key choices
++
++1. **No external dependencies**
++   - Validation: Regex patterns per country (inline, no library)
++   - VIES integration: Direct SOAP/HTTP POST via native `fetch` API
++   - Timeout: `AbortController` + `setTimeout` (native)
++   - XML parsing: String extraction (no full XML parser)
++
++2. **SOAP over HTTP for VIES**
++   - Constructs SOAP envelope manually (brief XML template)
++   - Direct POST to https://ec.europa.eu/taxation_customs/vies/services/checkVatService
++   - No SOAP library dependency; minimal XML escaping for user input
++   - Parses response with simple regex (no full DOM/XML parser)
++
++3. **Format validation per country**
++   - 27 EU member states + XI (Northern Ireland) supported
++   - Greece code mapped to `EL` (not `GR`)
++   - Patterns based on VIES specifications
++   - Early return for malformed input (no network call)
++
++4. **Timeout and error handling**
++   - 10-second timeout via `AbortController` + `setTimeout`
++   - Network errors → `status: 'unverified'`, `valid: null`
++   - VIES unavailable, slow, or errors → graceful fallback
++   - Checkout never breaks (promise always resolves)
++
++5. **Test-friendly architecture**
++   - `options.fetch` parameter allows mock injection
++   - Tests mock VIES responses without network access
++   - All scenarios covered: valid, invalid, malformed, timeout, network error
++
++## Scaling and known limits
++- ponytail: XML response parsing uses string extraction, not full parser (no dep, works for VIES response structure)
++- ponytail: SOAP request built as string template (no validation of XML well-formedness if input contains rare chars)
++- Upgrade when: VIES response format changes, or multi-request batching needed
+diff --git a/src/vat.js b/src/vat.js
+index 0397080..c32a2e4 100644
+--- a/src/vat.js
++++ b/src/vat.js
+@@ -1,4 +1,179 @@
+ // VAT number check used by the B2B checkout. See TASK.md.
++
++// VAT format patterns per country (number part only, after country code)
++const vatFormats = {
++  AT: /^\d{8}$/, // Austria
++  BE: /^\d{10}$/, // Belgium
++  BG: /^\d{9,10}$/, // Bulgaria
++  HR: /^\d{11}$/, // Croatia
++  CY: /^\d{8}[A-Z]$/, // Cyprus
++  CZ: /^\d{8,10}$/, // Czech Republic
++  DK: /^\d{8}$/, // Denmark
++  EE: /^\d{9}$/, // Estonia
++  EL: /^\d{9}$/, // Greece
++  ES: /^[A-Z]\d{7}[A-Z0-9]$/, // Spain
++  FI: /^\d{8}$/, // Finland
++  FR: /^[A-Z0-9]{2}\d{9}$/, // France
++  DE: /^\d{11}$/, // Germany
++  HU: /^\d{8}$/, // Hungary
++  IE: /^\d{7}[A-Z]$|^\d{8}$/, // Ireland (old or new)
++  IT: /^\d{11}$/, // Italy
++  LV: /^\d{11}$/, // Latvia
++  LT: /^\d{12}$/, // Lithuania
++  LU: /^\d{8}$/, // Luxembourg
++  MT: /^\d{8}$/, // Malta
++  NL: /^\d{12}$/, // Netherlands
++  PL: /^\d{10}$/, // Poland
++  PT: /^\d{9}$/, // Portugal
++  RO: /^\d{6,10}$/, // Romania
++  SK: /^\d{10}$/, // Slovakia
++  SI: /^\d{8}$/, // Slovenia
++  SE: /^\d{12}$/, // Sweden
++  XI: /^\d{12}$/, // Northern Ireland (GB format)
++};
++
++async function verifyViaVies(countryCode, vatNumber, fetchImpl) {
++  // ponytail: SOAP request over HTTP; upgrade if VIES provides direct HTTP API
++  const url = 'https://ec.europa.eu/taxation_customs/vies/services/checkVatService';
++
++  const soapBody = `<?xml version="1.0" encoding="UTF-8"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++  <soap:Body>
++    <tns:checkVat>
++      <tns:vatNumber>${escapeXml(vatNumber)}</tns:vatNumber>
++      <tns:countryCode>${escapeXml(countryCode)}</tns:countryCode>
++    </tns:checkVat>
++  </soap:Body>
++</soap:Envelope>`;
++
++  const controller = new AbortController();
++  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
++
++  try {
++    const response = await fetchImpl(url, {
++      method: 'POST',
++      headers: {
++        'Content-Type': 'text/xml; charset=UTF-8',
++        'SOAPAction': '',
++      },
++      body: soapBody,
++      signal: controller.signal,
++    });
++
++    if (!response.ok) {
++      throw new Error(`VIES service returned ${response.status}`);
++    }
++
++    const text = await response.text();
++    const result = parseSoapResponse(text);
++
++    return {
++      status: result.valid ? 'valid' : 'invalid',
++      valid: result.valid,
++      countryCode,
++      vatNumber,
++      name: result.name || undefined,
++      address: result.address || undefined,
++    };
++  } catch (error) {
++    if (error.name === 'AbortError') {
++      throw new Error('VIES service timeout');
++    }
++    if (error instanceof TypeError) {
++      throw new Error('VIES service unavailable');
++    }
++    throw error;
++  } finally {
++    clearTimeout(timeoutId);
++  }
++}
++
++function escapeXml(str) {
++  return String(str)
++    .replace(/&/g, '&amp;')
++    .replace(/</g, '&lt;')
++    .replace(/>/g, '&gt;')
++    .replace(/"/g, '&quot;')
++    .replace(/'/g, '&apos;');
++}
++
++function parseSoapResponse(soapXml) {
++  // Extract valid, name, address from SOAP response
++  // ponytail: simple string extraction, not full XML parser (no dep)
++
++  // Check for fault
++  if (soapXml.includes('<soap:Fault>') || soapXml.includes('<faultstring>')) {
++    const faultMatch = soapXml.match(/<faultstring>([^<]+)<\/faultstring>/);
++    if (faultMatch && faultMatch[1].includes('invalid')) {
++      return { valid: false };
++    }
++    throw new Error('VIES service error');
++  }
++
++  // Extract valid
++  const validMatch = soapXml.match(/<ns\d+:valid>([^<]+)<\/ns\d+:valid>/);
++  const valid = validMatch ? validMatch[1].toLowerCase() === 'true' : false;
++
++  // Extract name and address
++  const nameMatch = soapXml.match(/<ns\d+:name>([^<]*)<\/ns\d+:name>/);
++  const addressMatch = soapXml.match(/<ns\d+:address>([^<]*)<\/ns\d+:address>/);
++
++  return {
++    valid,
++    name: nameMatch ? nameMatch[1].trim() || undefined : undefined,
++    address: addressMatch ? addressMatch[1].trim() || undefined : undefined,
++  };
++}
++
+ export async function checkVat(input, options = {}) {
+-  throw new Error('not implemented');
++  const fetchImpl = options.fetch || globalThis.fetch;
++
++  // Normalize input: remove spaces, dots, dashes; uppercase
++  const normalized = input
++    .trim()
++    .replace(/[\s.\-]/g, '')
++    .toUpperCase();
++
++  // Extract country code (first 2 chars) and VAT number (rest)
++  if (normalized.length < 3) {
++    return {
++      status: 'malformed',
++      valid: false,
++      reason: 'Input too short',
++    };
++  }
++
++  const countryCode = normalized.slice(0, 2);
++  const vatNumber = normalized.slice(2);
++
++  // Check if country is known
++  if (!vatFormats[countryCode]) {
++    return {
++      status: 'malformed',
++      valid: false,
++      reason: `Unknown country code: ${countryCode}`,
++    };
++  }
++
++  // Check format
++  if (!vatFormats[countryCode].test(vatNumber)) {
++    return {
++      status: 'malformed',
++      valid: false,
++      reason: `Invalid VAT format for ${countryCode}`,
++    };
++  }
++
++  // Well-formed; verify via VIES
++  try {
++    return await verifyViaVies(countryCode, vatNumber, fetchImpl);
++  } catch (error) {
++    return {
++      status: 'unverified',
++      valid: null,
++      countryCode,
++      vatNumber,
++      reason: error.message,
++    };
++  }
+ }
+diff --git a/test/vat.test.js b/test/vat.test.js
+index a3b41da..13ff794 100644
+--- a/test/vat.test.js
++++ b/test/vat.test.js
+@@ -5,3 +5,153 @@ import { checkVat } from '../src/vat.js';
+ test('checkVat is exported', () => {
+   assert.equal(typeof checkVat, 'function');
+ });
++
++test('format: rejects unknown country', async () => {
++  const result = await checkVat('XX12345678');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('format: rejects too-short input', async () => {
++  const result = await checkVat('DK');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('format: rejects invalid DK format', async () => {
++  const result = await checkVat('DK 123');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('format: normalizes spaces and dashes', async () => {
++  // Both should be treated as malformed (wrong length for DK)
++  // but normalization should work
++  const result = await checkVat('DK 12-34-56');
++  assert.equal(result.status, 'malformed');
++});
++
++test('format: accepts case-insensitive input', async () => {
++  // Create a mock fetch that returns valid
++  const mockFetch = async () => ({
++    ok: true,
++    text: async () => `<?xml version="1.0"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
++  <soap:Body>
++    <ns0:checkVatResponse xmlns:ns0="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++      <ns0:valid>true</ns0:valid>
++      <ns0:name>Test Company</ns0:name>
++      <ns0:address>Test Address</ns0:address>
++    </ns0:checkVatResponse>
++  </soap:Body>
++</soap:Envelope>`,
++  });
++
++  const result = await checkVat('dk12345678', { fetch: mockFetch });
++  // If it gets to VIES, it means format was accepted (case insensitivity worked)
++  assert.equal(result.status, 'valid');
++  assert.equal(result.valid, true);
++});
++
++test('vies: returns valid when VIES confirms', async () => {
++  const mockFetch = async () => ({
++    ok: true,
++    text: async () => `<?xml version="1.0"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
++  <soap:Body>
++    <ns0:checkVatResponse xmlns:ns0="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++      <ns0:valid>true</ns0:valid>
++      <ns0:name>Valid Company A/S</ns0:name>
++      <ns0:address>Main Street 1, Copenhagen</ns0:address>
++    </ns0:checkVatResponse>
++  </soap:Body>
++</soap:Envelope>`,
++  });
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'valid');
++  assert.equal(result.valid, true);
++  assert.equal(result.name, 'Valid Company A/S');
++  assert.equal(result.address, 'Main Street 1, Copenhagen');
++});
++
++test('vies: returns invalid when VIES rejects', async () => {
++  const mockFetch = async () => ({
++    ok: true,
++    text: async () => `<?xml version="1.0"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
++  <soap:Body>
++    <ns0:checkVatResponse xmlns:ns0="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++      <ns0:valid>false</ns0:valid>
++    </ns0:checkVatResponse>
++  </soap:Body>
++</soap:Envelope>`,
++  });
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'invalid');
++  assert.equal(result.valid, false);
++});
++
++test('vies: returns unverified on timeout', async () => {
++  const mockFetch = async () => {
++    throw new DOMException('The operation was aborted.', 'AbortError');
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /timeout/i);
++});
++
++test('vies: returns unverified on network error', async () => {
++  const mockFetch = async () => {
++    throw new TypeError('Network error');
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++});
++
++test('vies: returns unverified on VIES server error', async () => {
++  const mockFetch = async () => ({
++    ok: false,
++    status: 500,
++    text: async () => '',
++  });
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++});
++
++test('format: accepts various EU countries', async () => {
++  const mockFetch = async () => ({
++    ok: true,
++    text: async () => `<?xml version="1.0"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
++  <soap:Body>
++    <ns0:checkVatResponse xmlns:ns0="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++      <ns0:valid>true</ns0:valid>
++    </ns0:checkVatResponse>
++  </soap:Body>
++</soap:Envelope>`,
++  });
++
++  // DE (Germany): 11 digits
++  const de = await checkVat('DE12345678901', { fetch: mockFetch });
++  assert.equal(de.status, 'valid');
++
++  // FR (France): 2 alphanumeric + 9 digits
++  const fr = await checkVat('FRXY123456789', { fetch: mockFetch });
++  assert.equal(fr.status, 'valid');
++
++  // EL (Greece): 9 digits
++  const el = await checkVat('EL123456789', { fetch: mockFetch });
++  assert.equal(el.status, 'valid');
++
++  // XI (Northern Ireland): 12 digits
++  const xi = await checkVat('XI123456789012', { fetch: mockFetch });
++  assert.equal(xi.status, 'valid');
++});
