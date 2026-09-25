@@ -231,8 +231,10 @@ orchestrator folder.
 - 4.10.5 adds one rule from these results: outside facts (API endpoints and
   their request/response shape, ID and tax-number formats, licenses, versions)
   come from a look-up in the session, never from memory, even when a lower
-  rung holds. Every clean and excluded failure above was of this kind. Not
-  measured. A later round on another model can reuse the Haiku harness with
+  rung holds. The t3 failures (clean and excluded) and the false license and
+  version claims were of this kind; the t1 and t4 failures were requirements
+  the agent skipped (admin approval, per-product price, 25-row pages), which
+  no look-up fixes. Not measured. A later round on another model can reuse the Haiku harness with
   `BENCH_RESULTS`, `BENCH_FORK_RULES=fork-current` and `BENCH_MODEL_NAME`,
   from an orchestrating session started in a folder without project
   instructions.
