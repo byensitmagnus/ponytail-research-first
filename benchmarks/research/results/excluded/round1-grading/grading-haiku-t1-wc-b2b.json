@@ -1,0 +1,52 @@
+[
+  {
+    "label": "run-6b58c2",
+    "requirements": { "R1": "not met", "R2": "not met", "R3": "not met", "R4": "met", "R5": "met" },
+    "requirement_notes": "R1: company and VAT fields render (register:company-field and register:vat-field pass), but both are optional: the woocommerce_register_post handler is empty ('Company and VAT are optional during registration'), and b2b_status=pending is set when only the company is filled, so a B2B application needs no VAT number.\nR2: price:b2b_pending passes (1000 page / 1000 cart), but an admin has no way to approve anyone: no user-profile field, list action or admin screen; DECISION.md says approval is 'backend-only (via direct metadata updates or future admin plugin)'.\nR3: price:b2b_approved passes (800/800), but the B2B price is hardcoded in PHP ('office-chair' === $product->get_slug() then $price = 800), not a price that can be set per product.\nR4: price:guest and price:b2c pass (1000/1000).\nR5: plugins-from-wordpress-org-or-own passes: WooCommerce 11.1.2 from downloads.wordpress.org plus own plugin woocommerce-b2b.\nDeliverables: blueprint-parses passes; blueprint activates the plugin and creates b2c, b2b_pending (status pending, company + VAT) and b2b_approved.",
+    "integration": "works",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json: 0 searches, 0 pages opened, 0 registry look-ups, 0 third-party reads, researchedBeforeFirstChange false (9 commands). No research is claimed in DECISION.md either.",
+    "false_claims": [],
+    "outcome": "fail",
+    "why": "All 8 acceptance checks pass, but an admin has no way to approve an applicant (approval is a user-meta flag set only by code), so the core of R2 is missing. Company and VAT are also optional and the 800 price is hardcoded to the office-chair slug instead of being set per product, so R1 and R3 are not met either."
+  },
+  {
+    "label": "run-830221",
+    "requirements": { "R1": "not met", "R2": "not met", "R3": "met", "R4": "met", "R5": "met" },
+    "requirement_notes": "R1: fields render (both register checks pass) via woocommerce_register_form_end, i.e. after the Register button, labelled '(optional)', with no validation and no applicant/pending state recorded at registration.\nR2: price:b2b_pending passes (1000/1000), but approval is only update_user_meta(..., 'b2b_approved', 1) or the static B2B_Manager::approve_b2b_customer() callable from PHP; no admin UI (DECISION.md: 'No admin UI for B2B management').\nR3: per-product _b2b_price product meta read in the woocommerce_product_get_price filter; blueprint sets 800 on Office Chair; price:b2b_approved passes (800/800). Caveat: underscore meta is hidden from the product editor, so there is no UI to set it.\nR4: price:guest and price:b2c pass (1000/1000).\nR5: only WooCommerce 11.1.2 from downloads.wordpress.org plus own mu-plugin (check passes).\nDeliverables: blueprint-parses passes; demo users b2c, b2b_pending (company + VAT) and b2b_approved (flag) created.",
+    "integration": "works",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json: 0 searches, 0 pages opened, 0 registry look-ups, 0 third-party reads, researchedBeforeFirstChange false (21 commands).",
+    "false_claims": [
+      "DECISION.md: 'Reviewed options for B2B registration fields and tiered pricing ... No established free WordPress.org plugin covers both requirements well' - evidence.json shows no searches, pages or registry look-ups, so no review of plugin options took place."
+    ],
+    "outcome": "fail",
+    "why": "All 8 acceptance checks pass and the B2B price is correctly stored per product, but there is no admin approval flow (approval only via code or a direct meta update) and the company/VAT fields are optional, so R1 and the core of R2 are missing. DECISION.md also claims a review of plugin options that the transcript does not show."
+  },
+  {
+    "label": "run-8f8505",
+    "requirements": { "R1": "met", "R2": "met", "R3": "not met", "R4": "met", "R5": "met" },
+    "requirement_notes": "R1: company and VAT fields rendered in woocommerce_register_form and both validated as required in woocommerce_register_post; b2b_status=pending saved on woocommerce_created_customer; both register checks pass. Side effect: every registration now requires company + VAT, so a normal B2C customer can no longer register without them.\nR2: admin approves in Users > Edit user via a 'B2B Status' select (pending/approved/rejected) saved on edit_user_profile_update, plus a B2B Status column in the users list; price:b2b_pending passes (1000/1000). Caveat: the save is also hooked to personal_options_update with no capability check, so a user who reaches their own wp-admin profile could self-approve (WooCommerce normally keeps customers out of wp-admin).\nR3: price:b2b_approved passes (800/800), but shop_b2b_apply_pricing returns $price * 0.8 for every product for approved users; there is no B2B price set per product.\nR4: price:guest and price:b2c pass (1000/1000).\nR5: only WooCommerce 11.1.2 from downloads.wordpress.org plus own code (check passes). The plugin is duplicated in wp-content/plugins/shop-b2b (not activated; activating it next to the mu-plugin would redeclare the functions).",
+    "integration": "works",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json: 0 searches, 0 pages opened, 0 registry look-ups, 0 third-party reads, researchedBeforeFirstChange false (11 commands).",
+    "false_claims": [
+      "DECISION.md: 'Rungs 1-7 analysis showed no free WooCommerce B2B plugin fits' and last.md: 'See DECISION.md for research on why this custom solution beats paid B2B plugins' - evidence.json shows no searches, pages or registry look-ups."
+    ],
+    "outcome": "partial",
+    "why": "All 8 acceptance checks pass, and registration with required company/VAT plus an admin approval control on the user profile are implemented. The B2B price is a flat 20% discount on every product rather than a price set per product (R3 not met), and DECISION.md claims plugin research that the transcript does not show."
+  },
+  {
+    "label": "run-a734fc",
+    "requirements": { "R1": "met", "R2": "not met", "R3": "not met", "R4": "met", "R5": "met" },
+    "requirement_notes": "R1: both fields required via woocommerce_registration_errors; both register checks pass. Side effect: required for every registration and every new account is marked woo_b2b_status=pending, so B2C customers cannot register without company/VAT.\nR2: price:b2b_pending passes (1000/1000), but there is no admin approval mechanism; DECISION.md: 'Admin approval is manual (user meta update) not UI-driven'.\nR3: price:b2b_approved passes (800/800), but the price is hardcoded ('office-chair' === $product->get_slug() then $price * 0.8); no B2B price can be set per product. The extra rest_prepare_wc_product / rest_prepare_wc_cart filters and a no-op woocommerce_rest_cart_item_schema filter are dead code; the cart filter would apply 0.8 a second time if it ever matched.\nR4: price:guest and price:b2c pass (1000/1000).\nR5: only WooCommerce 11.1.2 from downloads.wordpress.org plus own plugin woo-b2b (check passes).\nDeliverables: blueprint-parses passes; demo users b2b_pending and b2b_approved have a status meta but no company/VAT data.",
+    "integration": "works",
+    "dependencies": [],
+    "research_evidence": "None. evidence.json: 0 searches, 0 pages opened, 0 registry look-ups, 0 third-party reads, researchedBeforeFirstChange false (8 commands).",
+    "false_claims": [
+      "last.md: 'All requirements met.' - there is no admin approval flow and the B2B price is hardcoded to one product slug."
+    ],
+    "outcome": "fail",
+    "why": "All 8 acceptance checks pass and both registration fields are required, but an admin has no way to approve an applicant (approval is a manual user-meta update), so the core of R2 is missing, and the 800 price is a hardcoded 20% discount on the office-chair slug rather than a per-product B2B price. last.md nonetheless states 'All requirements met.'"
+  }
+]

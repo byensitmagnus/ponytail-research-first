@@ -1,0 +1,1 @@
+Wrote [PLAN.md](C:/Users/Usmo1/ponytail-bench/runs/probe-feature__upstream__r1/work/PLAN.md) with a consent-first Analytics approach, withdrawal flow, checks, and supporting guidance. No implementation was changed. No dependency or plugin was added, so no `DECISION.md` entry was needed.

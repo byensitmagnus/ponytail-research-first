@@ -1,0 +1,140 @@
+diff --git a/src/vat.js b/src/vat.js
+index 4179a6d..49b1fdd 100644
+--- a/src/vat.js
++++ b/src/vat.js
+@@ -1,4 +1,63 @@
+-// VAT number check used by the B2B checkout. See TASK.md.
++// Format rules from national tax authorities; VIES decides registration status.
++const formats = {
++  AT: /^U\d{8}$/, BE: /^[01]\d{9}$/, BG: /^\d{9,10}$/,
++  CY: /^\d{8}[A-Z]$/, CZ: /^\d{8,10}$/, DE: /^\d{9}$/,
++  DK: /^\d{8}$/, EE: /^\d{9}$/, EL: /^\d{9}$/,
++  ES: /^(?:[A-Z]\d{7}[A-Z0-9]|\d{8}[A-Z])$/, FI: /^\d{8}$/,
++  FR: /^[A-HJ-NP-Z0-9]{2}\d{9}$/, HR: /^\d{11}$/,
++  HU: /^\d{8}$/, IE: /^(?:\d{7}[A-Z]{1,2}|\d[A-Z0-9]\d{5}[A-Z])$/,
++  IT: /^\d{11}$/, LT: /^(?:\d{9}|\d{12})$/, LU: /^\d{8}$/,
++  LV: /^\d{11}$/, MT: /^\d{8}$/, NL: /^\d{9}B\d{2}$/,
++  PL: /^\d{10}$/, PT: /^\d{9}$/, RO: /^\d{2,10}$/,
++  SE: /^\d{10}01$/, SI: /^\d{8}$/, SK: /^\d{10}$/,
++  XI: /^(?:\d{9}|\d{12}|(?:GD|HA)\d{3})$/,
++};
++
+ export async function checkVat(input, options = {}) {
+-  throw new Error('not implemented');
++  const normalized = typeof input === 'string'
++    ? input.replace(/[\s.-]/g, '').toUpperCase()
++    : '';
++  const countryCode = normalized.slice(0, 2);
++  const vatNumber = normalized.slice(2);
++  if (!formats[countryCode]?.test(vatNumber)) {
++    return { status: 'malformed', valid: false };
++  }
++
++  const identity = { countryCode, vatNumber };
++  const controller = new AbortController();
++  let timer;
++  try {
++    const result = await Promise.race([
++      (async () => {
++        const response = await (options.fetch ?? globalThis.fetch)(
++          'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number',
++          {
++            method: 'POST',
++            headers: { 'content-type': 'application/json' },
++            body: JSON.stringify(identity),
++            signal: controller.signal,
++          },
++        );
++        if (!response.ok) throw new Error(`VIES HTTP ${response.status}`);
++        return response.json();
++      })(),
++      new Promise((_, reject) => {
++        timer = setTimeout(() => {
++          reject(new Error('VIES timed out'));
++          controller.abort();
++        }, 10_000);
++      }),
++    ]);
++    if (typeof result?.valid !== 'boolean') throw new Error('VIES returned no verification result');
++    const checked = { status: result.valid ? 'valid' : 'invalid', valid: result.valid, ...identity };
++    if (result.valid) {
++      if (result.name && result.name !== '---') checked.name = result.name;
++      if (result.address && result.address !== '---') checked.address = result.address;
++    }
++    return checked;
++  } catch (error) {
++    return { status: 'unverified', valid: null, ...identity, reason: error?.message || 'VIES unavailable' };
++  } finally {
++    clearTimeout(timer);
++  }
+ }
+diff --git a/test/vat.test.js b/test/vat.test.js
+index 6d374d9..190817f 100644
+--- a/test/vat.test.js
++++ b/test/vat.test.js
+@@ -5,3 +5,65 @@ import { checkVat } from '../src/vat.js';
+ test('checkVat is exported', () => {
+   assert.equal(typeof checkVat, 'function');
+ });
++
++test('normalizes input and sends it to official VIES', async () => {
++  const fetch = async (url, request) => {
++    assert.equal(url, 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number');
++    assert.equal(request.method, 'POST');
++    assert.deepEqual(JSON.parse(request.body), { countryCode: 'DK', vatNumber: '12345678' });
++    return { ok: true, json: async () => ({ valid: true, name: 'Company', address: 'Street 1' }) };
++  };
++  assert.deepEqual(await checkVat('dk 12.34-56 78', { fetch }), {
++    status: 'valid', valid: true, countryCode: 'DK', vatNumber: '12345678',
++    name: 'Company', address: 'Street 1',
++  });
++});
++
++test('accepts formats for all 27 EU states and Northern Ireland', async () => {
++  const numbers = [
++    'ATU12345678', 'BE0123456789', 'BG123456789', 'CY12345678A',
++    'CZ12345678', 'DE123456789', 'DK12345678', 'EE123456789',
++    'EL123456789', 'ESA12345678', 'FI12345678', 'FRAB123456789',
++    'HR12345678901', 'HU12345678', 'IE1234567A', 'IT12345678901',
++    'LT123456789', 'LU12345678', 'LV12345678901', 'MT12345678',
++    'NL123456789B01', 'PL1234567890', 'PT123456789', 'RO12',
++    'SE123456789001', 'SI12345678', 'SK1234567890', 'XI123456789',
++  ];
++  const fetch = async () => ({ ok: true, json: async () => ({ valid: false }) });
++  for (const number of numbers) {
++    assert.equal((await checkVat(number, { fetch })).status, 'invalid', number);
++  }
++});
++
++test('malformed input never calls VIES', async () => {
++  const fetch = () => { throw new Error('unexpected network call'); };
++  for (const input of ['GB123456789', 'GR123456789', 'XX123456789', 'DK123', 'ES123456789', 'NL123456789A01', null]) {
++    assert.deepEqual(await checkVat(input, { fetch }), { status: 'malformed', valid: false });
++  }
++});
++
++test('service faults and unusable responses stay unverified', async () => {
++  for (const fetch of [
++    async () => { throw new Error('offline'); },
++    async () => ({ ok: false, status: 503 }),
++    async () => ({ ok: true, json: async () => ({}) }),
++  ]) {
++    const result = await checkVat('DE129273398', { fetch });
++    assert.equal(result.status, 'unverified');
++    assert.equal(result.valid, null);
++    assert.ok(result.reason);
++  }
++});
++
++test('a stalled VIES call returns after ten seconds', async () => {
++  let signal;
++  const fetch = (_, request) => {
++    signal = request.signal;
++    return new Promise(() => {});
++  };
++  const result = await checkVat('DK12345678', { fetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /timed out/i);
++  assert.equal(signal.aborted, true);
++});

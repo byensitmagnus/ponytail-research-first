@@ -149,21 +149,46 @@ Enable it under `/plugins` or with `[plugins] enabled = ["ponytail"]` in `~/.gro
 
 ### ZCode
 
-New in this fork: ZCode's hook runner drops any stdout that isn't JSON, so the hooks now answer it with `hookSpecificOutput`. Add to `hooks.events` in `~/.zcode/cli/config.json`:
+New in this fork: ZCode's hook runner drops any stdout that isn't JSON, so the hooks now answer it with `hookSpecificOutput`. Add both entries to `hooks.events` in `~/.zcode/cli/config.json` (keep your existing entries in the same arrays; `UserPromptSubmit` is what makes `/ponytail lite|full|ultra|off` work):
 
 ```json
 "SessionStart": [{ "matcher": "startup|resume|clear|compact", "hooks": [
   { "type": "process", "command": "node", "args": ["/path/to/ponytail-research-first/hooks/ponytail-activate.js"], "timeoutMs": 10000 }
+]}],
+"UserPromptSubmit": [{ "hooks": [
+  { "type": "process", "command": "node", "args": ["/path/to/ponytail-research-first/hooks/ponytail-mode-tracker.js"], "timeoutMs": 10000 }
 ]}]
 ```
 
+For the skills (`/ponytail-research` and friends), link `skills/*` into `~/.zcode/skills/` the same way as for Kimi below.
+
 ### Kimi Code
 
-Kimi CLI's hooks can't inject context (its `SessionStart` output is discarded, `UserPromptSubmit` can only block), so Kimi gets the skills: link or copy `skills/*` into `~/.kimi/skills/`. Kimi then picks `ponytail` and `ponytail-research` by their descriptions.
+Kimi's hooks can't inject context (its `SessionStart` output is discarded, `UserPromptSubmit` can only block), so Kimi gets the skills. Link each folder in `skills/` into `~/.kimi/skills/`:
+
+```bash
+for d in ponytail-research-first/skills/*/; do ln -s "$PWD/$d" ~/.kimi/skills/; done
+```
+
+On Windows, `mklink /J "%USERPROFILE%\.kimi\skills\<name>" "<checkout>\skills\<name>"` per folder. Kimi Desktop runs its own copy of Kimi with a private home: link into `%APPDATA%\kimi-desktop\daimon-share\daimon\runtime\kimi-code\home\.kimi\skills\` too. If you set `merge_all_available_skills = false` in `~/.kimi/config.toml` (default `true`), creating `~/.kimi/skills` hides your `~/.claude/skills` from Kimi. Kimi then offers `ponytail` and `ponytail-research` by their descriptions; nothing loads them automatically.
 
 ### Everything else
 
 Gemini CLI, OpenCode, GitHub Copilot, pi, Hermes, Qoder, Devin, Swival, OpenClaw, Windsurf, Cline, Kiro, Zed, Amp, Jules: same adapters as upstream. Take any command from the [upstream install guide](https://github.com/DietrichGebert/ponytail#install) and swap `DietrichGebert/ponytail` for `byensitmagnus/ponytail-research-first`. The npm package (`@dietrichgebert/ponytail`, used by OpenCode) is upstream's; for this fork point OpenCode at a checkout: `{ "plugin": ["/path/to/ponytail-research-first/.opencode/plugins/ponytail.mjs"] }`. Instruction-only hosts read [`AGENTS.md`](AGENTS.md), which carries rung 7. File map: [docs/agent-portability.md](docs/agent-portability.md).
+
+### What is verified where
+
+Three different mechanisms: a **lifecycle hook** injects the ruleset (with the research rung) into every session; an **auto-loaded rule** file does the same without hooks; a **skill** is only used when the agent picks it from its description.
+
+| Host | Mechanism | Verified on 2026-09-25 | Not verified |
+|---|---|---|---|
+| Codex | lifecycle hooks + skills | clean install from the commands above; fresh isolated sessions quote rung 7; live `/ponytail ultra` and `/ponytail off` survive a resumed session (fixed in 4.10.4) | nothing listed here |
+| Claude Code | lifecycle hooks + skills | clean install from the commands above; hook output | a live fresh session (headless CLI not logged in on the test machine) |
+| Cursor | lifecycle hooks | installer keeps other hooks on install, re-install and uninstall; hook output | a live Cursor chat (no headless Cursor agent on the test machine) |
+| ZCode | lifecycle hooks + skills | JSON hook output (ZCode drops non-JSON); ZCode's own CLI lists all seven skills | a live chat (the ZCode CLI has no model configured on the test machine) |
+| Grok Build | skills + commands | clean install from the command above | a live session (CLI not signed in) |
+| Kimi CLI / Kimi Desktop | skills | Kimi's own skill discovery finds all seven, for the CLI and for Kimi Desktop's private home | a live session (Kimi CLI has no model configured on the test machine) |
+| Windsurf, Cline, Copilot, Kiro, Qoder, Antigravity, Zed, Amp, Jules | auto-loaded rule | rule copies match `AGENTS.md` (CI) | everything else |
 
 ## Commands
 
@@ -192,7 +217,7 @@ Everything else is upstream Ponytail, merged from `DietrichGebert/ponytail` as i
 
 ## Numbers
 
-Upstream Ponytail measured **~54% less code, ~20% lower cost, ~27% faster, 100% safe** on real Claude Code sessions editing a FastAPI + React repo ([writeup](benchmarks/results/2026-06-18-agentic.md), [reproduce](benchmarks/)). Those numbers belong to the upstream ruleset. Rung 7 is not benchmarked yet: it adds a short search to feature-sized tasks and aims to delete whole subsystems, not lines. A research-arm benchmark is the next thing to add; until then, treat it as a hypothesis with a good example. The hooks put the rule in front of the agent; they don't prove the research happened. The one-line `Research:` note before the code is what makes it checkable.
+Upstream Ponytail measured **~54% less code, ~20% lower cost, ~27% faster, 100% safe** on real Claude Code sessions editing a FastAPI + React repo ([writeup](benchmarks/results/2026-06-18-agentic.md), [reproduce](benchmarks/)). Those numbers belong to the upstream ruleset. Rung 7 has been tested, and it has not shown a benefit yet. A pre-registered benchmark (four feature tasks with a research trap each, hidden acceptance checks, blind grading; [report](benchmarks/research/REPORT.md)) found: on Codex both arms passed the pilot; on Claude Haiku 4.5 the rule rarely made the agent look anything up, and when it did, the result was not better. What did hurt, in both arms, was writing outside facts from memory: an invented API endpoint, wrong VAT-number formats, a GPL library called MIT, a version that does not exist. That is why the rule now says endpoints, formats, licenses and versions come from a look-up in the session. Treat rung 7 as a good default that asks the agent to look first, not as a measured speed-up. The one-line `Research:` note before the code is what makes it checkable.
 
 ## FAQ
 

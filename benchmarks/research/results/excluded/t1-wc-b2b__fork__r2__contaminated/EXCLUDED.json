@@ -1,0 +1,1 @@
+{"reason":"SubagentStart hook injected the fork ruleset when the agent resumed after its own background job (flag reset to full by a new Claude session at 17:48:52Z); re-run per protocol"}

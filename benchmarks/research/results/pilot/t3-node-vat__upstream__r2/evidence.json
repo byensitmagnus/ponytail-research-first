@@ -1,0 +1,28 @@
+{
+  "id": "t3-node-vat__upstream__r2",
+  "searches": [
+    "site:ec.europa.eu taxation customs vies REST API check-vat-number api endpoint ...",
+    "site:ec.europa.eu/taxation_customs/vies/rest-api \"check-vat-number\" ...",
+    "",
+    "EU VAT number formats table AT BE BG CY CZ DE DK EE EL ES FI FR HR HU IE IT LT LU LV MT NL PL PT RO SE SI SK XI ...",
+    "",
+    "\"vies/rest-api/check-vat-number\" \"userError\" ..."
+  ],
+  "pagesOpened": [],
+  "commands": 20,
+  "commandFailures": 4,
+  "urlsInCommands": [
+    "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number",
+    "https://ec.europa.eu/assets/taxud/vow-information/swagger_publicVAT.yaml"
+  ],
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "agentMessages": 5,
+  "fileChanges": 4,
+  "researchLine": false,
+  "researchSkillRead": false,
+  "researchedBeforeFirstChange": true,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": false
+}

@@ -1,0 +1,23 @@
+{
+  "id": "t1-wc-b2b__upstream__r1",
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 9,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 3,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "extraInstructions": [
+    "C:\\Users\\Usmo1\\Documents\\fork ponytail med github og reserech first princip\\AGENTS.md",
+    "C:\\Users\\Usmo1\\.claude\\projects\\C--Users-Usmo1-Documents-fork-ponytail-med-github-og-reserech-first-princip\\memory\\MEMORY.md"
+  ],
+  "contaminated": true,
+  "researchLine": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}

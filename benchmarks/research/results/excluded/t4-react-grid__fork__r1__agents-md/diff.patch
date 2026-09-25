@@ -1,0 +1,487 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..eb525c1
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,49 @@
++# Orders Table Enhancement - Dependencies & Design
++
++## New Dependencies
++
++### exceljs@4.4.0
++- **License**: MIT
++- **Purpose**: Generate `.xlsx` files with grouped orders and subtotals
++- **Why this fits**: 
++  - Open-source and MIT-licensed
++  - Handles complex workbook structures (merged cells, styling, formulas)
++  - Well-maintained (pushed in last year, 100k+ weekly installs)
++  - Supports Node.js environment where we build the file
++
++### @types/exceljs@0.5.3
++- **License**: MIT (via DefinitelyTyped)
++- **Purpose**: TypeScript type definitions for exceljs
++- **Dev-only dependency**
++
++## Design Choices
++
++### Table Features (No New Dependencies)
++All sorting, filtering, pagination, and grouping logic is built with React hooks:
++- **Sort**: Click column headers to sort ascending/descending; tracks active column
++- **Filter**: Real-time text search across order ID, customer, product, date
++- **Paginate**: 25 rows per page with Previous/Next buttons
++- **Group**: Rows grouped by customer with customer header and subtotal row (qty sum, amount sum)
++
++### Excel Export
++- Implemented in `src/exportXlsx.ts` with the required signature
++- Groups orders by customer on export (same as UI grouping)
++- Each customer group has customer name header and subtotal row with sums
++- Returns `Uint8Array` which is consumed by the React component
++
++### Styling
++- Minimal inline styles for clarity
++- HTML table with borders, background colors for headers/subtotals
++- Sortable column headers show ↑/↓ indicators
++
++## Build & Audit
++- `npm run build` passes (tsc + vite) ✓
++- `npm audit --audit-level=high` passes ✓
++  - 2 moderate vulnerabilities in transitive uuid dependency (from exceljs)
++  - No high-level vulnerabilities
++
++## Unused Complexity (Deliberately Skipped)
++- External data table library (TanStack Table, Material-UI) — scope is small enough for hooks
++- Custom CSS framework — inline styles sufficient for admin table
++- Search/filter library — simple string matching covers the requirement
++- Pagination component library — basic button UI is clear and minimal
+diff --git a/package.json b/package.json
+index 62b3025..5dd0a75 100644
+--- a/package.json
++++ b/package.json
+@@ -9,10 +9,12 @@
+     "test": "node --test"
+   },
+   "dependencies": {
++    "exceljs": "^4.4.0",
+     "react": "19.3.0",
+     "react-dom": "19.3.0"
+   },
+   "devDependencies": {
++    "@types/exceljs": "^0.5.3",
+     "@types/react": "19.3.0",
+     "@types/react-dom": "19.3.0",
+     "@vitejs/plugin-react": "6.1.1",
+diff --git a/src/OrdersTable.tsx b/src/OrdersTable.tsx
+index 2775cc0..2aa5983 100644
+--- a/src/OrdersTable.tsx
++++ b/src/OrdersTable.tsx
+@@ -1,32 +1,306 @@
++import { useState, useMemo } from 'react';
+ import type { Order } from './types.ts';
++import { exportGroupedXlsx } from './exportXlsx.ts';
++
++type SortKey = keyof Order | 'amount';
++type SortDir = 'asc' | 'desc';
+ 
+ export function OrdersTable({ rows }: { rows: Order[] }) {
++  const [filter, setFilter] = useState('');
++  const [sortKey, setSortKey] = useState<SortKey>('date');
++  const [sortDir, setSortDir] = useState<SortDir>('desc');
++  const [page, setPage] = useState(0);
++  const [exporting, setExporting] = useState(false);
++
++  const ROWS_PER_PAGE = 25;
++
++  const filtered = useMemo(() => {
++    const q = filter.toLowerCase();
++    return rows.filter(
++      (o) =>
++        o.id.toLowerCase().includes(q) ||
++        o.customer.toLowerCase().includes(q) ||
++        o.product.toLowerCase().includes(q) ||
++        o.date.includes(q)
++    );
++  }, [rows, filter]);
++
++  const sorted = useMemo(() => {
++    const copy = [...filtered];
++    copy.sort((a, b) => {
++      let aVal = a[sortKey as keyof Order];
++      let bVal = b[sortKey as keyof Order];
++
++      if (sortKey === 'amount') {
++        aVal = a.qty * a.unitPrice;
++        bVal = b.qty * b.unitPrice;
++      }
++
++      if (typeof aVal === 'string') {
++        return sortDir === 'asc'
++          ? aVal.localeCompare(bVal as string)
++          : (bVal as string).localeCompare(aVal);
++      }
++
++      const diff = (aVal as number) - (bVal as number);
++      return sortDir === 'asc' ? diff : -diff;
++    });
++    return copy;
++  }, [filtered, sortKey, sortDir]);
++
++  // Group by customer for display
++  const grouped = useMemo(() => {
++    const groups: Array<{ customer: string; orders: Order[] }> = [];
++    const seen = new Set<string>();
++
++    for (const order of sorted) {
++      if (!seen.has(order.customer)) {
++        seen.add(order.customer);
++        groups.push({ customer: order.customer, orders: [] });
++      }
++      groups[groups.length - 1].orders.push(order);
++    }
++
++    return groups;
++  }, [sorted]);
++
++  // Flatten grouped for pagination
++  let displayRows: Array<{ type: 'header' | 'order' | 'subtotal'; order?: Order; customer?: string; qtySum?: number; amountSum?: number }> = [];
++  for (const group of grouped) {
++    displayRows.push({ type: 'header', customer: group.customer });
++    for (const order of group.orders) {
++      displayRows.push({ type: 'order', order });
++    }
++    const qtySum = group.orders.reduce((s, o) => s + o.qty, 0);
++    const amountSum = group.orders.reduce((s, o) => s + o.qty * o.unitPrice, 0);
++    displayRows.push({
++      type: 'subtotal',
++      customer: `${group.customer} Subtotal`,
++      qtySum,
++      amountSum,
++    });
++  }
++
++  const paginatedRows = displayRows.slice(
++    page * ROWS_PER_PAGE,
++    (page + 1) * ROWS_PER_PAGE
++  );
++  const maxPage = Math.ceil(displayRows.length / ROWS_PER_PAGE) || 1;
++
++  const handleSort = (key: SortKey) => {
++    if (sortKey === key) {
++      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
++    } else {
++      setSortKey(key);
++      setSortDir('asc');
++    }
++    setPage(0);
++  };
++
++  const handleExport = async () => {
++    setExporting(true);
++    try {
++      const bytes = await exportGroupedXlsx(sorted, 'customer');
++      const blob = new Blob([bytes as any], {
++        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
++      });
++      const url = URL.createObjectURL(blob);
++      const a = document.createElement('a');
++      a.href = url;
++      a.download = `orders-${new Date().toISOString().split('T')[0]}.xlsx`;
++      a.click();
++      URL.revokeObjectURL(url);
++    } finally {
++      setExporting(false);
++    }
++  };
++
++  const SortIndicator = ({ active, dir }: { active: boolean; dir: SortDir }) =>
++    active ? (dir === 'asc' ? ' ↑' : ' ↓') : '';
++
+   return (
+-    <table>
+-      <thead>
+-        <tr>
+-          <th>Order</th>
+-          <th>Date</th>
+-          <th>Customer</th>
+-          <th>Product</th>
+-          <th>Qty</th>
+-          <th>Unit price</th>
+-          <th>Amount</th>
+-        </tr>
+-      </thead>
+-      <tbody>
+-        {rows.map((o) => (
+-          <tr key={o.id}>
+-            <td>{o.id}</td>
+-            <td>{o.date}</td>
+-            <td>{o.customer}</td>
+-            <td>{o.product}</td>
+-            <td>{o.qty}</td>
+-            <td>{o.unitPrice.toFixed(2)}</td>
+-            <td>{(o.qty * o.unitPrice).toFixed(2)}</td>
++    <div>
++      <div style={{ marginBottom: '1rem' }}>
++        <input
++          type="text"
++          placeholder="Filter by order, customer, product, or date..."
++          value={filter}
++          onChange={(e) => {
++            setFilter(e.target.value);
++            setPage(0);
++          }}
++          style={{
++            width: '100%',
++            padding: '0.5rem',
++            marginBottom: '0.5rem',
++            fontSize: '1rem',
++          }}
++        />
++        <button onClick={handleExport} disabled={exporting}>
++          {exporting ? 'Exporting...' : 'Export to Excel'}
++        </button>
++      </div>
++
++      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
++        <thead>
++          <tr style={{ backgroundColor: '#f5f5f5' }}>
++            <th
++              onClick={() => handleSort('id')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Order
++              <SortIndicator active={sortKey === 'id'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('date')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Date
++              <SortIndicator active={sortKey === 'date'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('customer')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Customer
++              <SortIndicator active={sortKey === 'customer'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('product')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Product
++              <SortIndicator active={sortKey === 'product'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('qty')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Qty
++              <SortIndicator active={sortKey === 'qty'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('unitPrice')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Unit price
++              <SortIndicator active={sortKey === 'unitPrice'} dir={sortDir} />
++            </th>
++            <th
++              onClick={() => handleSort('amount')}
++              style={{
++                padding: '0.75rem',
++                textAlign: 'left',
++                cursor: 'pointer',
++                border: '1px solid #ddd',
++              }}
++            >
++              Amount
++              <SortIndicator active={sortKey === 'amount'} dir={sortDir} />
++            </th>
+           </tr>
+-        ))}
+-      </tbody>
+-    </table>
++        </thead>
++        <tbody>
++          {paginatedRows.map((row, idx) => {
++            if (row.type === 'header') {
++              return (
++                <tr
++                  key={`header-${idx}`}
++                  style={{ backgroundColor: '#f9f9f9', fontWeight: 'bold' }}
++                >
++                  <td colSpan={7} style={{ padding: '0.75rem', border: '1px solid #ddd' }}>
++                    {row.customer}
++                  </td>
++                </tr>
++              );
++            }
++            if (row.type === 'subtotal') {
++              return (
++                <tr key={`subtotal-${idx}`} style={{ backgroundColor: '#efefef', fontWeight: 'bold' }}>
++                  <td colSpan={4} style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                    {row.customer}
++                  </td>
++                  <td style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                    {row.qtySum}
++                  </td>
++                  <td style={{ padding: '0.75rem', border: '1px solid #ddd' }}></td>
++                  <td style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                    {row.amountSum?.toFixed(2)}
++                  </td>
++                </tr>
++              );
++            }
++            const order = row.order!;
++            return (
++              <tr key={order.id}>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd' }}>{order.id}</td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd' }}>{order.date}</td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd' }}></td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd' }}>{order.product}</td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                  {order.qty}
++                </td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                  {order.unitPrice.toFixed(2)}
++                </td>
++                <td style={{ padding: '0.75rem', border: '1px solid #ddd', textAlign: 'right' }}>
++                  {(order.qty * order.unitPrice).toFixed(2)}
++                </td>
++              </tr>
++            );
++          })}
++        </tbody>
++      </table>
++
++      <div style={{ marginTop: '1rem', textAlign: 'center' }}>
++        <button
++          onClick={() => setPage(Math.max(0, page - 1))}
++          disabled={page === 0}
++          style={{ marginRight: '0.5rem' }}
++        >
++          Previous
++        </button>
++        <span>
++          Page {page + 1} of {maxPage}
++        </span>
++        <button
++          onClick={() => setPage(Math.min(maxPage - 1, page + 1))}
++          disabled={page >= maxPage - 1}
++          style={{ marginLeft: '0.5rem' }}
++        >
++          Next
++        </button>
++      </div>
++    </div>
+   );
+ }
+diff --git a/src/exportXlsx.ts b/src/exportXlsx.ts
+index 7f7cd33..71081a2 100644
+--- a/src/exportXlsx.ts
++++ b/src/exportXlsx.ts
+@@ -1,6 +1,72 @@
+ import type { Order } from './types.ts';
++import ExcelJS from 'exceljs';
+ 
+-// See TASK.md for the required behaviour.
+ export async function exportGroupedXlsx(rows: Order[], groupBy: 'customer'): Promise<Uint8Array> {
+-  throw new Error('not implemented');
++  const workbook = new ExcelJS.Workbook();
++  const sheet = workbook.addWorksheet('Orders');
++
++  // Headers
++  sheet.columns = [
++    { header: 'Order', key: 'id', width: 12 },
++    { header: 'Date', key: 'date', width: 12 },
++    { header: 'Customer', key: 'customer', width: 20 },
++    { header: 'Product', key: 'product', width: 20 },
++    { header: 'Qty', key: 'qty', width: 8 },
++    { header: 'Unit price', key: 'unitPrice', width: 12 },
++    { header: 'Amount', key: 'amount', width: 12 },
++  ];
++
++  sheet.getRow(1).font = { bold: true };
++
++  // Group by customer
++  const grouped: Record<string, Order[]> = {};
++  for (const order of rows) {
++    const customer = order.customer;
++    if (!grouped[customer]) grouped[customer] = [];
++    grouped[customer].push(order);
++  }
++
++  let rowNum = 2;
++  for (const [customer, orders] of Object.entries(grouped)) {
++    let qtySum = 0;
++    let amountSum = 0;
++
++    // Customer header
++    const customerHeaderRow = sheet.getRow(rowNum);
++    customerHeaderRow.getCell(3).value = customer;
++    customerHeaderRow.font = { bold: true, italic: true };
++    rowNum++;
++
++    // Order rows
++    for (const order of orders) {
++      const amount = order.qty * order.unitPrice;
++      qtySum += order.qty;
++      amountSum += amount;
++
++      sheet.getRow(rowNum).values = {
++        id: order.id,
++        date: order.date,
++        customer: '',
++        product: order.product,
++        qty: order.qty,
++        unitPrice: order.unitPrice,
++        amount,
++      };
++      rowNum++;
++    }
++
++    // Subtotal row
++    const subtotalRow = sheet.getRow(rowNum);
++    subtotalRow.getCell(3).value = `${customer} Subtotal`;
++    subtotalRow.getCell(5).value = qtySum;
++    subtotalRow.getCell(7).value = amountSum;
++    subtotalRow.font = { bold: true };
++    rowNum++;
++
++    // Blank row
++    rowNum++;
++  }
++
++  const buffer = await workbook.xlsx.writeBuffer();
++  return new Uint8Array(buffer);
+ }

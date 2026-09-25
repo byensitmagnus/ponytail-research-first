@@ -1,0 +1,3 @@
+Implemented [checkVat](/C:/Users/Usmo1/ponytail-bench/runs/t3-node-vat__upstream__r2/work/src/vat.js) with local format checks for all 27 EU states and Northern Ireland, verification through the [official VIES API](https://ec.europa.eu/assets/taxud/vow-information/swagger_publicVAT.yaml), and an `unverified` result for service failures or a ten-second timeout. The format rules follow [Skatteverket’s VAT number table](https://www.skatteverket.se/skatter/mervardesskattmoms/momsregistreringsnummer.4.18e1b10334ebe8bc80002649.html).
+
+All six [offline tests](/C:/Users/Usmo1/ponytail-bench/runs/t3-node-vat__upstream__r2/work/test/vat.test.js) pass. No dependencies were added.

@@ -1,0 +1,17 @@
+{
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 11,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 6,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}

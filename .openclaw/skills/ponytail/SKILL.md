@@ -1,7 +1,7 @@
 ---
 name: ponytail
 description: "Lazy senior dev mode for any coding task (write, refactor, fix, review): YAGNI, stdlib first, no unrequested abstractions. Not for non-coding requests."
-homepage: https://github.com/DietrichGebert/ponytail
+homepage: https://github.com/byensitmagnus/ponytail-research-first
 license: MIT
 ---
 
@@ -63,6 +63,12 @@ Time-box it: 3–5 searches, about ten minutes. Stars pick the candidates, the
 code decides: read the part that does the work and check what sits in a paid
 tier. Leave one line before the code:
 `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
+Only name a candidate you looked up in this session; one you only remember is
+marked `(from memory, unverified)`.
+Facts about an outside system (an API endpoint and its request and response
+shape, an ID or tax-number format, a license, a version) come from its
+official docs or registry in this session, never from memory; that look-up
+runs even when a lower rung already holds.
 Deep version: `/ponytail-research`.
 
 Example: B2B login with wholesale prices on WooCommerce. GitHub has nothing

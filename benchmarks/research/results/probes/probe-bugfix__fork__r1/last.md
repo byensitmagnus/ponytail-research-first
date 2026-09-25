@@ -1,0 +1,1 @@
+Fixed the off-by-one slice boundary in [src/paginate.js](C:/Users/Usmo1/ponytail-bench/runs/probe-bugfix__fork__r1/work/src/paginate.js:4). `npm test` passes: 2 tests. No dependencies or plugins were added.

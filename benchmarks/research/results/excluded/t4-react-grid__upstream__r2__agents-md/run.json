@@ -1,0 +1,42 @@
+{
+  "id": "t4-react-grid__upstream__r2",
+  "task": "t4-react-grid",
+  "variant": "upstream",
+  "rep": 2,
+  "order": 7,
+  "launch": 1,
+  "variantSha": "e3ba2aa",
+  "agent": "Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session",
+  "transcriptFormat": "claude-code-subagent",
+  "promptSha256": "2a696a6feee0131e2703a22f6a6967c58aab46e5d5c67616b8727b478e86aaa8",
+  "started": "2026-09-25T18:52:20.938Z",
+  "ended": "2026-09-25T18:55:52.590Z",
+  "minutes": 3.53,
+  "usage": {
+    "total_tokens": 100371,
+    "tool_uses": 32,
+    "model_calls": 29,
+    "input_tokens": 234,
+    "cache_read_input_tokens": 2476428,
+    "cache_creation_input_tokens": 70495,
+    "output_tokens": 12491
+  },
+  "sharedContextSha256": "6255d04b37ca76a8f0a5cdf049e373bba308edb61385a8040c3b0e07e237b603",
+  "promptMatches": true,
+  "agentCommits": 0,
+  "contaminated": true,
+  "leaks": [],
+  "forbiddenTools": [],
+  "ghWrites": [],
+  "diff": {
+    "files": 4,
+    "added": 309,
+    "deleted": 28,
+    "numstat": [
+      "53 0 DECISION.md",
+      "3 1 package.json",
+      "165 25 src/OrdersTable.tsx",
+      "88 2 src/exportXlsx.ts"
+    ]
+  }
+}

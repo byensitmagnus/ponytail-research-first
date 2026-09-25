@@ -1,0 +1,173 @@
+{
+  "task": "t3-node-vat",
+  "checks": [
+    {
+      "id": "install",
+      "req": "R6",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "own-tests-offline",
+      "req": "R6",
+      "pass": true,
+      "detail": "tests=39 out (10001.4536ms)\n✔ Timeout handling (10001.635ms)\n▶ Error handling\n  ✔ returns unverified on fetch error (0.1645ms)\n  ✔ returns unverified on non-200 response (0.0691ms)\n✔ Error handling (0.408ms)\nℹ tests 39\nℹ suites 0\nℹ pass 39\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 20088.4504\n"
+    },
+    {
+      "id": "exports",
+      "req": "interface",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "malformed:DK123",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for DK\"} calls=0"
+    },
+    {
+      "id": "malformed:DE12345678",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for DE\"} calls=0"
+    },
+    {
+      "id": "malformed:NL123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for NL\"} calls=0"
+    },
+    {
+      "id": "malformed:XX123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Unsupported country code: XX\"} calls=0"
+    },
+    {
+      "id": "malformed:IE12",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for IE\"} calls=0"
+    },
+    {
+      "id": "malformed:empty",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Input must be a non-empty string\"} calls=0"
+    },
+    {
+      "id": "wellformed:IE6388047V",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:DE129273398",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for DE\"} sent=undefined"
+    },
+    {
+      "id": "wellformed:NL810433941B01",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:EL094014201",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:ESA28015865",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:IT00488410010",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:PL5260250995",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:SE556703748501",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:BE0403170701",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:LU26375245",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"} sent={\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "wellformed:XI123456782",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"status\":\"malformed\",\"valid\":false,\"reason\":\"Invalid VAT number format for XI\"} sent=undefined"
+    },
+    {
+      "id": "normalize-input",
+      "req": "R1",
+      "pass": false,
+      "detail": "{\"kind\":\"unknown\",\"url\":\"https://ec.europa.eu/taxation_customs/vies/api/checkVat\"}"
+    },
+    {
+      "id": "name-address",
+      "req": "R3",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"}"
+    },
+    {
+      "id": "invalid",
+      "req": "R3",
+      "pass": false,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"}"
+    },
+    {
+      "id": "unverified:busy",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"}"
+    },
+    {
+      "id": "unverified:unavailable",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service returned 404\"}"
+    },
+    {
+      "id": "unverified:network",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service error: fetch failed\"}"
+    },
+    {
+      "id": "unverified:timeout",
+      "req": "R4",
+      "pass": true,
+      "detail": "10001ms {\"status\":\"unverified\",\"valid\":null,\"reason\":\"VIES service timeout (>10 seconds)\"}"
+    },
+    {
+      "id": "uses-options-fetch",
+      "req": "R5",
+      "pass": true,
+      "detail": "global fetch calls: 0"
+    }
+  ]
+}

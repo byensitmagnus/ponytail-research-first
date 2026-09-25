@@ -1,0 +1,397 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..76913fa
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,68 @@
++# B2B Solution - Decision Log
++
++## Dependencies
++
++### WordPress & WooCommerce (Free, WordPress.org)
++- **WordPress 7.1.2** — Core platform
++- **WooCommerce 11.1.2** — E-commerce foundation
++  - License: GPLv3 (free)
++  - Reason: Only free option for WooCommerce; required for hooks and product management
++
++### Custom Plugin (Zero Cost)
++- **Shop B2B (shop-b2b)** — Our minimal B2B implementation
++  - Location: `wp-content/mu-plugins/shop-b2b.php`
++  - License: GPLv2+
++  - Why: Rungs 1-7 analysis showed no free WooCommerce B2B plugin fits; paid B2B plugins (Dokan, Multivendor, etc.) violate zero-budget requirement. Custom code using WooCommerce hooks is smallest working solution.
++
++## Design Decisions
++
++### 1. Registration Form Fields (Rung 4: Platform native)
++- **Choice:** WooCommerce registration hooks (`woocommerce_register_form`, `woocommerce_register_post`, `woocommerce_created_customer`)
++- **Alternative:** Custom shortcode/form — rejected, WooCommerce provides the right hooks
++- **Result:** Fields `billing_company` and `billing_vat_number` stored as user meta; no new table
++
++### 2. B2B Status Tracking (Rung 3: Stdlib)
++- **Choice:** User meta key `b2b_status` with values: `pending`, `approved`, `rejected`
++- **Why:** WordPress standard, no new schema, admin UI included
++- **Admin Interface:** Editable in user profile → B2B Information section
++
++### 3. Pricing Logic (Rung 2: Existing pattern)
++- **Choice:** Single filter on `woocommerce_product_get_price` (20% discount: 1000 → 800)
++- **Why:** Simplest hook that applies to both product page display AND Store API cart calculations
++- **No cart item filter:** Avoided double-application; product price filter alone suffices
++- **Result:** 3 lines of code, applies everywhere price is retrieved
++
++### 4. Three Demo Users (Blueprint Step)
++- `b2c` — Normal B2C customer (no B2B meta)
++- `b2b_pending` — Applied with company/VAT, status = pending (sees regular price)
++- `b2b_approved` — Approved B2B applicant, status = approved (sees 800)
++- All passwords: `Bench-2026!`
++
++## No Additional Features (Ponytail YAGNI)
++- Email notifications on approval — not in requirements
++- B2B-only product catalog — not in requirements
++- Minimum order quantities — not in requirements
++- B2B payment terms — not in requirements
++
++## File Structure
++```
++wp-content/
++  mu-plugins/
++    shop-b2b.php — Loaded automatically by WordPress
++  plugins/
++    shop-b2b/ — Backup copy (not loaded; blueprint mounts mu-plugins)
++```
++
++## Test Results
++All 6 checks pass:
++- price:guest = 1000 ✓
++- price:b2c = 1000 ✓
++- price:b2b_pending = 1000 ✓
++- price:b2b_approved = 800 ✓
++- register:company-field present ✓
++- register:vat-field present ✓
++
++## Future Paths
++- **Admin approval workflow:** Add admin notice/quick-action buttons (rung 6: one line)
++- **Bulk pricing tiers:** Add meta fields for quantity breaks (rung 2: existing pattern)
++- **Email notification:** Hook `woocommerce_register_post` → `wp_mail()` (one function)
+diff --git a/staging/blueprint.json b/staging/blueprint.json
+index b014190..69db799 100644
+--- a/staging/blueprint.json
++++ b/staging/blueprint.json
+@@ -22,7 +22,11 @@
+     },
+     {
+       "step": "runPHP",
+-      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); flush_rewrite_rules();"
++      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); flush_rewrite_rules();"
++    },
++    {
++      "step": "runPHP",
++      "code": "<?php require_once '/wordpress/wp-load.php'; $b2c_id = wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); update_user_meta($b2c_id, 'billing_company', 'B2C Ltd'); $b2b_p_id = wp_insert_user(array('user_login' => 'b2b_pending', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2b_pending@example.test', 'role' => 'customer')); update_user_meta($b2b_p_id, 'billing_company', 'Pending Corp'); update_user_meta($b2b_p_id, 'billing_vat_number', 'DE123456789'); update_user_meta($b2b_p_id, 'b2b_status', 'pending'); $b2b_a_id = wp_insert_user(array('user_login' => 'b2b_approved', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2b_approved@example.test', 'role' => 'customer')); update_user_meta($b2b_a_id, 'billing_company', 'Approved Inc'); update_user_meta($b2b_a_id, 'billing_vat_number', 'FR987654321'); update_user_meta($b2b_a_id, 'b2b_status', 'approved');"
+     }
+   ]
+ }
+diff --git a/wp-content/mu-plugins/shop-b2b.php b/wp-content/mu-plugins/shop-b2b.php
+new file mode 100644
+index 0000000..9990222
+--- /dev/null
++++ b/wp-content/mu-plugins/shop-b2b.php
+@@ -0,0 +1,147 @@
++<?php
++/**
++ * Plugin Name: Shop B2B
++ * Plugin URI: https://example.com
++ * Description: Minimal B2B customer support for WooCommerce
++ * Version: 1.0.0
++ * Author: Shop
++ * License: GPL v2 or later
++ */
++
++if (!defined('ABSPATH')) exit;
++
++// Add custom fields to registration form
++add_action('woocommerce_register_form', 'shop_b2b_register_form_fields');
++function shop_b2b_register_form_fields() {
++	?>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_billing_company"><?php esc_html_e('Company Name', 'woocommerce'); ?> <span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_company" id="reg_billing_company" autocomplete="organization" value="<?php echo isset($_POST['billing_company']) ? esc_attr($_POST['billing_company']) : ''; ?>" />
++	</p>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_billing_vat_number"><?php esc_html_e('VAT Number', 'woocommerce'); ?> <span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_vat_number" id="reg_billing_vat_number" value="<?php echo isset($_POST['billing_vat_number']) ? esc_attr($_POST['billing_vat_number']) : ''; ?>" />
++	</p>
++	<?php
++}
++
++// Validate and save custom fields on registration
++add_action('woocommerce_register_post', 'shop_b2b_validate_registration', 10, 3);
++function shop_b2b_validate_registration($username, $email, $validation_errors) {
++	if (empty($_POST['billing_company'])) {
++		$validation_errors->add('billing_company_error', __('Company Name is required.', 'woocommerce'));
++	}
++	if (empty($_POST['billing_vat_number'])) {
++		$validation_errors->add('billing_vat_number_error', __('VAT Number is required.', 'woocommerce'));
++	}
++}
++
++// Save B2B fields as user meta after registration
++add_action('woocommerce_created_customer', 'shop_b2b_save_customer_meta', 10, 1);
++function shop_b2b_save_customer_meta($user_id) {
++	if (!empty($_POST['billing_company'])) {
++		update_user_meta($user_id, 'billing_company', sanitize_text_field($_POST['billing_company']));
++	}
++	if (!empty($_POST['billing_vat_number'])) {
++		update_user_meta($user_id, 'billing_vat_number', sanitize_text_field($_POST['billing_vat_number']));
++	}
++	// Mark as B2B applicant (needs approval)
++	if (!empty($_POST['billing_company']) && !empty($_POST['billing_vat_number'])) {
++		update_user_meta($user_id, 'b2b_status', 'pending');
++	}
++}
++
++// Helper: Check if user is B2B approved
++function shop_b2b_is_approved($user_id = null) {
++	if ($user_id === null) {
++		$user_id = get_current_user_id();
++	}
++	if (!$user_id) return false;
++	return get_user_meta($user_id, 'b2b_status', true) === 'approved';
++}
++
++// Apply B2B pricing on product page and cart (single filter handles both)
++add_filter('woocommerce_product_get_price', 'shop_b2b_apply_pricing', 10, 2);
++function shop_b2b_apply_pricing($price, $product) {
++	if (shop_b2b_is_approved()) {
++		// 20% discount for approved B2B (1000 -> 800)
++		return $price * 0.8;
++	}
++	return $price;
++}
++
++// Add B2B fields to customer order
++add_action('woocommerce_checkout_create_order_line_item', 'shop_b2b_add_b2b_info', 10, 4);
++function shop_b2b_add_b2b_info($item, $cart_item_key, $values, $order) {
++	$user_id = $order->get_user_id();
++	if ($user_id && shop_b2b_is_approved($user_id)) {
++		$item->add_meta_data('b2b_customer', 'yes');
++	}
++}
++
++// Admin: Add B2B status column to users list
++add_filter('manage_users_columns', 'shop_b2b_user_columns');
++function shop_b2b_user_columns($columns) {
++	$columns['b2b_status'] = __('B2B Status', 'shop-b2b');
++	return $columns;
++}
++
++add_action('manage_users_custom_column', 'shop_b2b_user_column_content', 10, 3);
++function shop_b2b_user_column_content($output, $column_name, $user_id) {
++	if ($column_name === 'b2b_status') {
++		$status = get_user_meta($user_id, 'b2b_status', true);
++		$company = get_user_meta($user_id, 'billing_company', true);
++		if ($company) {
++			$status_text = $status === 'approved' ? 'Approved' : 'Pending';
++			$class = $status === 'approved' ? 'success' : 'warning';
++			return sprintf('<span style="color: %s; font-weight: bold;">%s</span>', $class === 'success' ? 'green' : 'orange', $status_text);
++		}
++		return '—';
++	}
++	return $output;
++}
++
++// Admin: Add B2B details to user profile
++add_action('show_user_profile', 'shop_b2b_user_profile');
++add_action('edit_user_profile', 'shop_b2b_user_profile');
++function shop_b2b_user_profile($user) {
++	$company = get_user_meta($user->ID, 'billing_company', true);
++	$vat = get_user_meta($user->ID, 'billing_vat_number', true);
++	$status = get_user_meta($user->ID, 'b2b_status', true);
++
++	if ($company || $vat) {
++		?>
++		<h3><?php _e('B2B Information', 'shop-b2b'); ?></h3>
++		<table class="form-table">
++			<tr>
++				<th><label><?php _e('Company Name', 'shop-b2b'); ?></label></th>
++				<td><?php echo esc_html($company); ?></td>
++			</tr>
++			<tr>
++				<th><label><?php _e('VAT Number', 'shop-b2b'); ?></label></th>
++				<td><?php echo esc_html($vat); ?></td>
++			</tr>
++			<tr>
++				<th><label for="b2b_status"><?php _e('B2B Status', 'shop-b2b'); ?></label></th>
++				<td>
++					<select name="b2b_status" id="b2b_status">
++						<option value=""><?php _e('Not B2B', 'shop-b2b'); ?></option>
++						<option value="pending" <?php selected($status, 'pending'); ?>><?php _e('Pending Approval', 'shop-b2b'); ?></option>
++						<option value="approved" <?php selected($status, 'approved'); ?>><?php _e('Approved', 'shop-b2b'); ?></option>
++						<option value="rejected" <?php selected($status, 'rejected'); ?>><?php _e('Rejected', 'shop-b2b'); ?></option>
++					</select>
++				</td>
++			</tr>
++		</table>
++		<?php
++	}
++}
++
++// Save B2B status from user profile
++add_action('personal_options_update', 'shop_b2b_save_profile');
++add_action('edit_user_profile_update', 'shop_b2b_save_profile');
++function shop_b2b_save_profile($user_id) {
++	if (isset($_POST['b2b_status'])) {
++		update_user_meta($user_id, 'b2b_status', sanitize_text_field($_POST['b2b_status']));
++	}
++}
+diff --git a/wp-content/plugins/shop-b2b/shop-b2b.php b/wp-content/plugins/shop-b2b/shop-b2b.php
+new file mode 100644
+index 0000000..9990222
+--- /dev/null
++++ b/wp-content/plugins/shop-b2b/shop-b2b.php
+@@ -0,0 +1,147 @@
++<?php
++/**
++ * Plugin Name: Shop B2B
++ * Plugin URI: https://example.com
++ * Description: Minimal B2B customer support for WooCommerce
++ * Version: 1.0.0
++ * Author: Shop
++ * License: GPL v2 or later
++ */
++
++if (!defined('ABSPATH')) exit;
++
++// Add custom fields to registration form
++add_action('woocommerce_register_form', 'shop_b2b_register_form_fields');
++function shop_b2b_register_form_fields() {
++	?>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_billing_company"><?php esc_html_e('Company Name', 'woocommerce'); ?> <span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_company" id="reg_billing_company" autocomplete="organization" value="<?php echo isset($_POST['billing_company']) ? esc_attr($_POST['billing_company']) : ''; ?>" />
++	</p>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_billing_vat_number"><?php esc_html_e('VAT Number', 'woocommerce'); ?> <span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_vat_number" id="reg_billing_vat_number" value="<?php echo isset($_POST['billing_vat_number']) ? esc_attr($_POST['billing_vat_number']) : ''; ?>" />
++	</p>
++	<?php
++}
++
++// Validate and save custom fields on registration
++add_action('woocommerce_register_post', 'shop_b2b_validate_registration', 10, 3);
++function shop_b2b_validate_registration($username, $email, $validation_errors) {
++	if (empty($_POST['billing_company'])) {
++		$validation_errors->add('billing_company_error', __('Company Name is required.', 'woocommerce'));
++	}
++	if (empty($_POST['billing_vat_number'])) {
++		$validation_errors->add('billing_vat_number_error', __('VAT Number is required.', 'woocommerce'));
++	}
++}
++
++// Save B2B fields as user meta after registration
++add_action('woocommerce_created_customer', 'shop_b2b_save_customer_meta', 10, 1);
++function shop_b2b_save_customer_meta($user_id) {
++	if (!empty($_POST['billing_company'])) {
++		update_user_meta($user_id, 'billing_company', sanitize_text_field($_POST['billing_company']));
++	}
++	if (!empty($_POST['billing_vat_number'])) {
++		update_user_meta($user_id, 'billing_vat_number', sanitize_text_field($_POST['billing_vat_number']));
++	}
++	// Mark as B2B applicant (needs approval)
++	if (!empty($_POST['billing_company']) && !empty($_POST['billing_vat_number'])) {
++		update_user_meta($user_id, 'b2b_status', 'pending');
++	}
++}
++
++// Helper: Check if user is B2B approved
++function shop_b2b_is_approved($user_id = null) {
++	if ($user_id === null) {
++		$user_id = get_current_user_id();
++	}
++	if (!$user_id) return false;
++	return get_user_meta($user_id, 'b2b_status', true) === 'approved';
++}
++
++// Apply B2B pricing on product page and cart (single filter handles both)
++add_filter('woocommerce_product_get_price', 'shop_b2b_apply_pricing', 10, 2);
++function shop_b2b_apply_pricing($price, $product) {
++	if (shop_b2b_is_approved()) {
++		// 20% discount for approved B2B (1000 -> 800)
++		return $price * 0.8;
++	}
++	return $price;
++}
++
++// Add B2B fields to customer order
++add_action('woocommerce_checkout_create_order_line_item', 'shop_b2b_add_b2b_info', 10, 4);
++function shop_b2b_add_b2b_info($item, $cart_item_key, $values, $order) {
++	$user_id = $order->get_user_id();
++	if ($user_id && shop_b2b_is_approved($user_id)) {
++		$item->add_meta_data('b2b_customer', 'yes');
++	}
++}
++
++// Admin: Add B2B status column to users list
++add_filter('manage_users_columns', 'shop_b2b_user_columns');
++function shop_b2b_user_columns($columns) {
++	$columns['b2b_status'] = __('B2B Status', 'shop-b2b');
++	return $columns;
++}
++
++add_action('manage_users_custom_column', 'shop_b2b_user_column_content', 10, 3);
++function shop_b2b_user_column_content($output, $column_name, $user_id) {
++	if ($column_name === 'b2b_status') {
++		$status = get_user_meta($user_id, 'b2b_status', true);
++		$company = get_user_meta($user_id, 'billing_company', true);
++		if ($company) {
++			$status_text = $status === 'approved' ? 'Approved' : 'Pending';
++			$class = $status === 'approved' ? 'success' : 'warning';
++			return sprintf('<span style="color: %s; font-weight: bold;">%s</span>', $class === 'success' ? 'green' : 'orange', $status_text);
++		}
++		return '—';
++	}
++	return $output;
++}
++
++// Admin: Add B2B details to user profile
++add_action('show_user_profile', 'shop_b2b_user_profile');
++add_action('edit_user_profile', 'shop_b2b_user_profile');
++function shop_b2b_user_profile($user) {
++	$company = get_user_meta($user->ID, 'billing_company', true);
++	$vat = get_user_meta($user->ID, 'billing_vat_number', true);
++	$status = get_user_meta($user->ID, 'b2b_status', true);
++
++	if ($company || $vat) {
++		?>
++		<h3><?php _e('B2B Information', 'shop-b2b'); ?></h3>
++		<table class="form-table">
++			<tr>
++				<th><label><?php _e('Company Name', 'shop-b2b'); ?></label></th>
++				<td><?php echo esc_html($company); ?></td>
++			</tr>
++			<tr>
++				<th><label><?php _e('VAT Number', 'shop-b2b'); ?></label></th>
++				<td><?php echo esc_html($vat); ?></td>
++			</tr>
++			<tr>
++				<th><label for="b2b_status"><?php _e('B2B Status', 'shop-b2b'); ?></label></th>
++				<td>
++					<select name="b2b_status" id="b2b_status">
++						<option value=""><?php _e('Not B2B', 'shop-b2b'); ?></option>
++						<option value="pending" <?php selected($status, 'pending'); ?>><?php _e('Pending Approval', 'shop-b2b'); ?></option>
++						<option value="approved" <?php selected($status, 'approved'); ?>><?php _e('Approved', 'shop-b2b'); ?></option>
++						<option value="rejected" <?php selected($status, 'rejected'); ?>><?php _e('Rejected', 'shop-b2b'); ?></option>
++					</select>
++				</td>
++			</tr>
++		</table>
++		<?php
++	}
++}
++
++// Save B2B status from user profile
++add_action('personal_options_update', 'shop_b2b_save_profile');
++add_action('edit_user_profile_update', 'shop_b2b_save_profile');
++function shop_b2b_save_profile($user_id) {
++	if (isset($_POST['b2b_status'])) {
++		update_user_meta($user_id, 'b2b_status', sanitize_text_field($_POST['b2b_status']));
++	}
++}

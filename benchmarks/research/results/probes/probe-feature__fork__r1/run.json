@@ -1,0 +1,61 @@
+{
+  "id": "probe-feature__fork__r1",
+  "task": "probe-feature",
+  "variant": "fork",
+  "rep": 1,
+  "order": 0,
+  "variantSha": "210b272",
+  "codex": "codex-cli 0.155.0-alpha.16.4",
+  "model": "gpt-6-sol",
+  "reasoning": "medium",
+  "sandbox": "workspace-write (Windows elevated sandbox), network on",
+  "disabledFeatures": [
+    "apps",
+    "browser_use",
+    "computer_use",
+    "memories"
+  ],
+  "promptSha256": "9afcd2e92bc95b600e51324fb3a7199d339c5af0a7a05d393e64072f2aa37c0b",
+  "started": "2026-09-25T15:58:39.261Z",
+  "ended": "2026-09-25T16:00:07.934Z",
+  "minutes": 1.48,
+  "exit": 0,
+  "killed": false,
+  "usage": {
+    "input_tokens": 184565,
+    "cached_input_tokens": 144896,
+    "output_tokens": 2782,
+    "reasoning_output_tokens": 1056,
+    "turns": 1
+  },
+  "rateLimits": {
+    "at": "2026-09-25T16:00:07.148Z",
+    "limit_id": "codex",
+    "limit_name": null,
+    "primary": {
+      "used_percent": 96,
+      "window_minutes": 10080,
+      "resets_at": 1790413921
+    },
+    "secondary": null,
+    "credits": {
+      "has_credits": false,
+      "unlimited": false,
+      "balance": "0"
+    },
+    "individual_limit": null,
+    "spend_control_reached": null,
+    "plan_type": "pro",
+    "rate_limit_reached_type": null
+  },
+  "planUsedPctBefore": 96,
+  "diff": {
+    "files": 1,
+    "added": 22,
+    "deleted": 0,
+    "numstat": [
+      "22 0 PLAN.md"
+    ]
+  },
+  "stderrTail": ""
+}

@@ -1,0 +1,23 @@
+{
+  "searches": [
+    "site:ec.europa.eu taxation customs VIES REST API check vat number endpoint check-vat-number ...",
+    "European Commission VIES REST API /rest-api/ms/ vat number check official documentation ...",
+    "ec.europa.eu taxation_customs vies rest-api technical information isValid userError VALID INVALID MS_UNAVAILABLE ...",
+    ""
+  ],
+  "pagesOpened": [],
+  "commands": 21,
+  "commandFailures": 6,
+  "urlsInCommands": [
+    "https://ec.europa.eu/taxation_customs/vies/rest-api/ms/DE/vat/129273398",
+    "https://ec.europa.eu/taxation_customs/vies/rest-api/ms/DE/vat/123456789"
+  ],
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "agentMessages": 6,
+  "fileChanges": 5,
+  "researchedBeforeFirstChange": true,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": false
+}

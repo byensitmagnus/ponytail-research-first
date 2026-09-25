@@ -1,0 +1,29 @@
+diff --git a/PLAN.md b/PLAN.md
+new file mode 100644
+index 0000000..d3d8d1f
+--- /dev/null
++++ b/PLAN.md
+@@ -0,0 +1,23 @@
++# Cookie consent plan
++
++## Current state
++
++`index.html` loads `gtag.js` immediately, and `site.js` configures Google Analytics on every visit. The checked-in page is the only HTML page in this workspace; the GA ID is a placeholder (`G-XXXXXXX`).
++
++## Approach
++
++1. Remove the unconditional Google script from the HTML head. Put the banner markup in `index.html` and handle its buttons in `site.js`; use native buttons and a visible, keyboard-accessible “Cookie settings” control that remains available after the banner closes.
++2. Default to no analytics. Show equally prominent **Accept analytics** and **Reject analytics** choices, with no preselected choice and no blocked site content. Explain that Google Analytics measures visits, identify Google, and link to a cookie/privacy notice with the actual purposes, data recipients, cookie names and lifetimes, and withdrawal instructions. The notice needs real site/operator details before release.
++3. Store the choice, timestamp, and notice version locally as a necessary consent preference. Treat a missing, invalid, or outdated record as no consent. If storage is unavailable, fail closed on later page loads. On an affirmative choice or a valid saved acceptance, inject `gtag.js` once and only then initialize/configure Analytics. Rejection must never load it. Use Google's *basic consent mode* if consent mode is required for the deployed GA setup; advanced mode sends cookieless pings before consent and does not meet the requested no-load behavior.
++4. Let visitors reopen settings and change either choice. On withdrawal, disable further GA measurement immediately, clear the GA cookies this site actually sets (including their domain/path variants), and reload so the Google script is absent. A previous transmission cannot be undone; the notice should say this plainly. Re-prompt when the notice version or purposes change.
++5. Check fresh, accepted, rejected, returning, and withdrawn visits on every served page. In browser Network/Application tools, verify no request to Google Analytics/tag endpoints and no GA cookies before acceptance or after rejection; verify one load after acceptance and no further analytics after withdrawal. Also check keyboard access, narrow screens, and storage failure.
++
++## Dependency decision
++
++No third-party package or plugin. Name: none; exact version: N/A; licence: N/A. The existing Google Analytics service is already present; no new dependency is needed for one analytics purpose and two choices. If the site later adds multiple vendors/purposes or requires centrally auditable consent records, reassess a consent management platform then.
++
++## Basis
++
++- [Datatilsynet: Cookies og GDPR](https://www.datatilsynet.dk/regler-og-vejledning/gdpr-univers-for-smaa-virksomheder/cookies-og-gdpr) — consent before setting/reading nonessential cookies; disclose purposes, parties, lifetime, and withdrawal.
++- [EDPB: Cookie Banner Taskforce](https://www.edpb.europa.eu/system/files/2023-01/edpb_20230118_report_cookie_banner_taskforce_en.pdf) — meaningful reject option and no preselected consent.
++- [Google: Consent mode overview](https://developers.google.com/tag-platform/security/concepts/consent-mode) — basic mode blocks Google tags before consent; advanced mode sends cookieless measurements.

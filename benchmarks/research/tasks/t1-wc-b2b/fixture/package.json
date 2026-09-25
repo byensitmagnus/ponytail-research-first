@@ -1,0 +1,12 @@
+{
+  "name": "shop-b2b",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node staging/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

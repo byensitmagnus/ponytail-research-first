@@ -1,0 +1,452 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..b6f2a6c
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,61 @@
++# checkVat Implementation Decisions
++
++## Dependencies
++
++**None added.** Implementation uses only Node.js built-in APIs:
++- `String.prototype.match()` for regex parsing
++- `fetch` (global, available in Node 18+) for VIES service
++- `AbortController` for timeout handling
++- Standard XML parsing via regex (no external XML lib)
++
++## Architecture
++
++### Format Validation (Offline)
++- Per-country regex patterns for 27 EU members + Northern Ireland (XI)
++- Validates format before any network call
++- Returns `malformed` status immediately for invalid formats
++- Prevents unnecessary VIES calls and avoids exposing bad data to the service
++
++### VIES Integration (Online)
++- Constructs SOAP 1.1 requests manually (no XML library)
++- POSTs to `https://ec.europa.eu/taxation_customs/vies/services/checkVatService`
++- Parses VIES response via simple regex XML parsing
++- Extracts `valid`, `name`, `address` fields
++
++### Timeout Handling
++- 10-second timeout via `AbortController`
++- Returns `unverified` with reason on timeout or network errors
++- Checkout never breaks: all failures degrade gracefully
++
++### Input Normalization
++- Accepts flexible formatting: spaces, dots, dashes
++- Case-insensitive (normalizes to uppercase)
++- Handles both prefixed (`DK 12 34 56 78`) and non-prefixed inputs
++- Special case: Greece uses `EL` (not `GR`), Northern Ireland uses `XI`
++
++## Skipped
++
++1. **SOAP client library**: Would add dependency and complexity. Manual SOAP is simple for this single operation.
++2. **XML parsing library**: Regex extraction is sufficient for VIES's simple, well-formed response structure.
++3. **VAT format database**: Hardcoded per-country patterns sufficient; VIES is the real validator.
++4. **Rate limiting / caching**: Defer to caller's layer; checkout systems typically implement this.
++5. **Extended error details**: Return only actionable info; checkout flow doesn't need granular error codes.
++
++## Test Coverage
++
++17 tests, all without hitting the real network:
++- Malformed input handling (6 tests)
++- Input normalization (2 tests)
++- VIES response parsing (valid/invalid, with/without details)
++- Error conditions (HTTP error, timeout, network error, no fetch available)
++- Country codes including special cases (EL, XI)
++
++## Interface Preserved
++
++```js
++export async function checkVat(input, options = {})
++// options.fetch: optional fetch implementation
++// Returns: {status, valid, countryCode?, vatNumber?, name?, address?, reason?}
++```
++
++All statuses implemented: `valid`, `invalid`, `malformed`, `unverified`.
+diff --git a/src/vat.js b/src/vat.js
+index 0397080..b62797a 100644
+--- a/src/vat.js
++++ b/src/vat.js
+@@ -1,4 +1,203 @@
+ // VAT number check used by the B2B checkout. See TASK.md.
++
++const VIES_URL = 'https://ec.europa.eu/taxation_customs/vies/services/checkVatService';
++const VIES_TIMEOUT_MS = 10000;
++
++// Format spec per country: [pattern, description]
++// ponytail: minimal format validation; VIES is the real arbiter
++const COUNTRY_FORMATS = {
++  AT: /^\d{9}$/,
++  BE: /^\d{9,12}$/,
++  BG: /^\d{9,10}$/,
++  HR: /^\d{11}$/,
++  CY: /^\d{8}[A-Z]?$/,
++  CZ: /^\d{8,10}$/,
++  DK: /^\d{8}$/,
++  DE: /^\d{11}$/,
++  EE: /^\d{9}$/,
++  EL: /^\d{9}$/,
++  ES: /^\d{8,9}[A-Z]?$/,
++  FI: /^\d{8}$/,
++  FR: /^[A-Z0-9]{2}\d{9}$|^\d{11}$/,
++  HU: /^\d{8}$/,
++  IE: /^\d{7}[A-Z]{1,2}$|^\d{7,8}$/,
++  IT: /^\d{11}$/,
++  LV: /^\d{11}$/,
++  LT: /^\d{12}$/,
++  LU: /^\d{8}$/,
++  MT: /^\d{8}$/,
++  NL: /^\d{12}[A-Z]{2}$/,
++  PL: /^\d{10}$/,
++  PT: /^\d{9}$/,
++  RO: /^\d{5,10}$/,
++  SK: /^\d{10}$/,
++  SI: /^\d{8}$/,
++  SE: /^\d{12}$/,
++  XI: /^\d{5,6}[A-Z]?$/
++};
++
++function normalizeInput(input) {
++  if (typeof input !== 'string') return null;
++  const cleaned = input.trim().replace(/[\s.\-]/g, '').toUpperCase();
++  if (!cleaned) return null;
++
++  // Extract country code (first 2 letters, or XI)
++  const match = cleaned.match(/^([A-Z]{2})(.*)/);
++  if (!match) return null;
++
++  const countryCode = match[1];
++  const vatNumber = match[2];
++
++  return { countryCode, vatNumber };
++}
++
++function validateFormat(countryCode, vatNumber) {
++  const pattern = COUNTRY_FORMATS[countryCode];
++  if (!pattern) return false; // Unknown country code
++  return pattern.test(vatNumber);
++}
++
++function buildSoapRequest(countryCode, vatNumber) {
++  const xml = `<?xml version="1.0" encoding="UTF-8"?>
++<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
++  <soap:Body>
++    <checkVat xmlns="urn:ec.europa.eu:taxud:vies:services:checkVat:types">
++      <countryCode>${escapeXml(countryCode)}</countryCode>
++      <vatNumber>${escapeXml(vatNumber)}</vatNumber>
++    </checkVat>
++  </soap:Body>
++</soap:Envelope>`;
++  return xml;
++}
++
++function escapeXml(str) {
++  return String(str)
++    .replace(/&/g, '&amp;')
++    .replace(/</g, '&lt;')
++    .replace(/>/g, '&gt;')
++    .replace(/"/g, '&quot;')
++    .replace(/'/g, '&apos;');
++}
++
++function parseSoapResponse(body) {
++  // Simple XML parsing for VIES response
++  // Format: <checkVatResponse><valid>true</valid><name>...</name><address>...</address></checkVatResponse>
++
++  const getTag = (tag) => {
++    const match = body.match(new RegExp(`<${tag}>([^<]*)</${tag}>`));
++    return match ? match[1] : null;
++  };
++
++  const valid = getTag('valid') === 'true';
++  const name = getTag('name');
++  const address = getTag('address');
++
++  return { valid, name, address };
++}
++
+ export async function checkVat(input, options = {}) {
+-  throw new Error('not implemented');
++  // Use provided fetch, or fall back to global fetch if not specified
++  const fetchImpl = 'fetch' in options ? options.fetch : (typeof fetch !== 'undefined' ? fetch : null);
++
++  const normalized = normalizeInput(input);
++  if (!normalized) {
++    return {
++      status: 'malformed',
++      valid: false
++    };
++  }
++
++  const { countryCode, vatNumber } = normalized;
++
++  // Validate format (malformed check without network call)
++  if (!validateFormat(countryCode, vatNumber)) {
++    return {
++      status: 'malformed',
++      valid: false,
++      countryCode,
++      vatNumber
++    };
++  }
++
++  // Well-formed: verify via VIES
++  try {
++    if (!fetchImpl) {
++      return {
++        status: 'unverified',
++        valid: null,
++        countryCode,
++        vatNumber,
++        reason: 'fetch not available'
++      };
++    }
++
++    const soapRequest = buildSoapRequest(countryCode, vatNumber);
++
++    const controller = new AbortController();
++    const timeoutId = setTimeout(() => controller.abort(), VIES_TIMEOUT_MS);
++
++    try {
++      const response = await fetchImpl(VIES_URL, {
++        method: 'POST',
++        headers: {
++          'Content-Type': 'text/xml; charset=UTF-8',
++          'SOAPAction': ''
++        },
++        body: soapRequest,
++        signal: controller.signal
++      });
++
++      clearTimeout(timeoutId);
++
++      if (!response.ok) {
++        return {
++          status: 'unverified',
++          valid: null,
++          countryCode,
++          vatNumber,
++          reason: `VIES service returned ${response.status}`
++        };
++      }
++
++      const body = await response.text();
++      const parsed = parseSoapResponse(body);
++
++      return {
++        status: parsed.valid ? 'valid' : 'invalid',
++        valid: parsed.valid,
++        countryCode,
++        vatNumber,
++        name: parsed.name,
++        address: parsed.address
++      };
++    } catch (err) {
++      clearTimeout(timeoutId);
++
++      if (err.name === 'AbortError') {
++        return {
++          status: 'unverified',
++          valid: null,
++          countryCode,
++          vatNumber,
++          reason: 'VIES service timeout (>10s)'
++        };
++      }
++
++      return {
++        status: 'unverified',
++        valid: null,
++        countryCode,
++        vatNumber,
++        reason: `VIES service unavailable: ${err.message}`
++      };
++    }
++  } catch (err) {
++    return {
++      status: 'unverified',
++      valid: null,
++      countryCode,
++      vatNumber,
++      reason: `Unexpected error: ${err.message}`
++    };
++  }
+ }
+diff --git a/test/vat.test.js b/test/vat.test.js
+index a3b41da..5747ce4 100644
+--- a/test/vat.test.js
++++ b/test/vat.test.js
+@@ -5,3 +5,171 @@ import { checkVat } from '../src/vat.js';
+ test('checkVat is exported', () => {
+   assert.equal(typeof checkVat, 'function');
+ });
++
++test('malformed: missing country code', async () => {
++  const result = await checkVat('12345678');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('malformed: empty input', async () => {
++  const result = await checkVat('');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('malformed: unknown country code', async () => {
++  const result = await checkVat('XX12345678');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('malformed: wrong format for DK (too short)', async () => {
++  const result = await checkVat('DK1234567');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++  assert.equal(result.countryCode, 'DK');
++});
++
++test('malformed: wrong format for DK (letters)', async () => {
++  const result = await checkVat('DKABCDEFGH');
++  assert.equal(result.status, 'malformed');
++  assert.equal(result.valid, false);
++});
++
++test('normalizes: case insensitive', async () => {
++  const mockFetch = async (url, opts) => {
++    const body = opts.body;
++    assert.match(body, /<countryCode>DK<\/countryCode>/);
++    assert.match(body, /<vatNumber>12345678<\/vatNumber>/);
++    return new Response(`<checkVatResponse><valid>true</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('dk12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'valid');
++  assert.equal(result.valid, true);
++});
++
++test('normalizes: removes spaces, dashes, dots', async () => {
++  const mockFetch = async (url, opts) => {
++    assert.match(opts.body, /<vatNumber>12345678<\/vatNumber>/);
++    return new Response(`<checkVatResponse><valid>false</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('DK 12.34-56.78', { fetch: mockFetch });
++  assert.equal(result.status, 'invalid');
++  assert.equal(result.valid, false);
++});
++
++test('vies: valid response with name and address', async () => {
++  const mockFetch = async () => {
++    return new Response(`
++      <checkVatResponse>
++        <valid>true</valid>
++        <name>Test Company A/S</name>
++        <address>Main Street 123, Copenhagen, DK</address>
++      </checkVatResponse>
++    `, { status: 200 });
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'valid');
++  assert.equal(result.valid, true);
++  assert.equal(result.name, 'Test Company A/S');
++  assert.equal(result.address, 'Main Street 123, Copenhagen, DK');
++});
++
++test('vies: invalid response', async () => {
++  const mockFetch = async () => {
++    return new Response(`<checkVatResponse><valid>false</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'invalid');
++  assert.equal(result.valid, false);
++});
++
++test('vies: http error', async () => {
++  const mockFetch = async () => {
++    return new Response('Service unavailable', { status: 503 });
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /503/);
++});
++
++test('vies: timeout (> 10s)', async () => {
++  const mockFetch = async (url, opts) => {
++    // Simulate abort
++    throw new DOMException('Aborted', 'AbortError');
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /timeout/);
++});
++
++test('vies: network error', async () => {
++  const mockFetch = async () => {
++    throw new Error('Network error');
++  };
++
++  const result = await checkVat('DK12345678', { fetch: mockFetch });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /Network error/);
++});
++
++test('no fetch available', async () => {
++  const result = await checkVat('DK12345678', { fetch: undefined });
++  assert.equal(result.status, 'unverified');
++  assert.equal(result.valid, null);
++  assert.match(result.reason, /not available/);
++});
++
++test('Greece country code EL', async () => {
++  const mockFetch = async (url, opts) => {
++    assert.match(opts.body, /<countryCode>EL<\/countryCode>/);
++    return new Response(`<checkVatResponse><valid>true</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('EL123456789', { fetch: mockFetch });
++  assert.equal(result.status, 'valid');
++  assert.equal(result.countryCode, 'EL');
++});
++
++test('Northern Ireland XI code', async () => {
++  const mockFetch = async (url, opts) => {
++    assert.match(opts.body, /<countryCode>XI<\/countryCode>/);
++    return new Response(`<checkVatResponse><valid>true</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('XI123456', { fetch: mockFetch });
++  assert.equal(result.status, 'valid');
++  assert.equal(result.countryCode, 'XI');
++});
++
++test('returns countryCode and vatNumber', async () => {
++  const mockFetch = async () => {
++    return new Response(`<checkVatResponse><valid>true</valid></checkVatResponse>`, {
++      status: 200
++    });
++  };
++
++  const result = await checkVat('DE123456789012', { fetch: mockFetch });
++  assert.equal(result.countryCode, 'DE');
++  assert.equal(result.vatNumber, '123456789012');
++});

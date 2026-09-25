@@ -1,0 +1,40 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/",
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "7.1.2"
+  },
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "url",
+        "url": "https://downloads.wordpress.org/plugin/woocommerce.11.1.2.zip"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "permalink_structure": "/%postname%/",
+        "woocommerce_enable_myaccount_registration": "yes",
+        "woocommerce_registration_generate_password": "no",
+        "woocommerce_registration_generate_username": "yes",
+        "woocommerce_coming_soon": "no",
+        "woocommerce_store_pages_only": "no",
+        "woocommerce_currency": "EUR"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); flush_rewrite_rules();"
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require_once '/wordpress/wp-load.php'; $id = wc_get_product_id_by_sku('') ?: 0; $q = new WP_Query(array('post_type' => 'product', 'name' => 'office-chair')); $pid = $q->posts[0]->ID; update_post_meta($pid, '_b2b_price', '800'); foreach (array('b2b_pending' => 'pending', 'b2b_approved' => 'approved') as $login => $status) { $uid = wp_insert_user(array('user_login' => $login, 'user_pass' => 'Bench-2026!', 'user_email' => $login . '@example.test', 'role' => 'customer')); update_user_meta($uid, 'billing_company', 'Demo ApS'); update_user_meta($uid, 'b2b_vat', 'DK12345678'); update_user_meta($uid, 'b2b_status', $status); }"
+    }
+  ]
+}

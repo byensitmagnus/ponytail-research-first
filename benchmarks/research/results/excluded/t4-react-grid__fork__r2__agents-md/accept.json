@@ -1,0 +1,53 @@
+{
+  "task": "t4-react-grid",
+  "checks": [
+    {
+      "id": "install",
+      "req": "R5",
+      "pass": true,
+      "detail": " i@izs.me\nnpm warn deprecated fstream@1.0.12: This package is no longer supported.\nnpm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).\n"
+    },
+    {
+      "id": "build",
+      "req": "R5",
+      "pass": true,
+      "detail": "00 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n"
+    },
+    {
+      "id": "audit-high",
+      "req": "R5",
+      "pass": true,
+      "detail": "To address all issues (including breaking changes), run:   npm audit fix --force "
+    },
+    {
+      "id": "licences-free",
+      "req": "R4",
+      "pass": true,
+      "detail": "no commercial licences found"
+    },
+    {
+      "id": "export-runs",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"ok\":true,\"bytes\":6965,\"isUint8Array\":true}\n"
+    },
+    {
+      "id": "xlsx-valid",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"valid_zip\":true,\"customers\":{\"Alpha Test ApS\":true,\"Beta Test A/S\":true,\"Gamma Test I/S\":true},\"subtotals\":{\"Alpha Test ApS\":true,\"Beta Test A/S\":true,\"Gamma Test I/S\":true}}"
+    },
+    {
+      "id": "xlsx-customers",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"Alpha Test ApS\":true,\"Beta Test A/S\":true,\"Gamma Test I/S\":true}"
+    },
+    {
+      "id": "xlsx-subtotals",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"Alpha Test ApS\":true,\"Beta Test A/S\":true,\"Gamma Test I/S\":true}"
+    }
+  ]
+}

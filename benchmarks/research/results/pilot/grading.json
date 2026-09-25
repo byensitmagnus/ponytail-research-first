@@ -1,0 +1,38 @@
+{
+  "grader": "independent subagent, blind (labels only), GRADER.md; unblinded afterwards from results/blind/key.json",
+  "blindingLeak": "last.md file links contained the run folder name, which includes the arm; the grader reported it and says it ignored it. blind.mjs now scrubs it.",
+  "runs": [
+    {
+      "label": "run-4b9764",
+      "run": "pilot/t3-node-vat__upstream__r2",
+      "requirements": { "R1": "met", "R2": "met", "R3": "met", "R4": "met", "R5": "met", "R6": "met" },
+      "integration": "works",
+      "dependencies": [],
+      "false_claims": [],
+      "outcome": "pass",
+      "weaknesses": [
+        "unverified reason text is generic, VIES error code not passed on",
+        "old IE format with '+'/'*' not accepted",
+        "timeout test waits a real 10 s",
+        "format source (Skatteverket table) cited in last.md but not opened in the transcript: unbacked"
+      ],
+      "why": "All 28 acceptance checks pass; single injected-fetch call site; every test stubbed; accurate format table including SE '01', BE 0/1 and XI GD/HA."
+    },
+    {
+      "label": "run-72b494",
+      "run": "pilot/t3-node-vat__fork__r2",
+      "requirements": { "R1": "met", "R2": "met", "R3": "met", "R4": "met", "R5": "met", "R6": "met" },
+      "integration": "works",
+      "dependencies": [],
+      "false_claims": [],
+      "outcome": "pass",
+      "weaknesses": [
+        "XI government and health-authority numbers (GD###, HA###) rejected as malformed",
+        "looser BE (no leading 0/1), SE (no '01' suffix) and FR (allows I/O) patterns send some wrong numbers to VIES",
+        "undisclosed package.json test-script change the task did not need (caused by the harness realpath fault)",
+        "format source (revenue.ie VIES manual) cited in code and last.md but not opened in the transcript: unbacked"
+      ],
+      "why": "All 28 acceptance checks pass; handles the GET userError trap explicitly with mocked-timer tests; weaker format table than the other run."
+    }
+  ]
+}

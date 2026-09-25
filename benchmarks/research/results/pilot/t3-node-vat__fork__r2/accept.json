@@ -1,0 +1,173 @@
+{
+  "task": "t3-node-vat",
+  "checks": [
+    {
+      "id": "install",
+      "req": "R6",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "own-tests-offline",
+      "req": "R6",
+      "pass": true,
+      "detail": "tests=6 .0692ms)\n✔ distinguishes invalid registrations from VIES failures (0.2631ms)\n✔ omits VIES placeholders and survives malformed response data (0.1874ms)\n✔ times out even when fetch ignores abort (0.4054ms)\nℹ tests 6\nℹ suites 0\nℹ pass 6\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 73.1587\n"
+    },
+    {
+      "id": "exports",
+      "req": "interface",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "malformed:DK123",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "malformed:DE12345678",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "malformed:NL123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "malformed:XX123456789",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "malformed:IE12",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "malformed:empty",
+      "req": "R2",
+      "pass": true,
+      "detail": "{\"status\":\"malformed\",\"valid\":false} calls=0"
+    },
+    {
+      "id": "wellformed:IE6388047V",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"IE\",\"vatNumber\":\"6388047V\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"IE\",\"num\":\"6388047V\"}"
+    },
+    {
+      "id": "wellformed:DE129273398",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"DE\",\"vatNumber\":\"129273398\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"DE\",\"num\":\"129273398\"}"
+    },
+    {
+      "id": "wellformed:NL810433941B01",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"NL\",\"vatNumber\":\"810433941B01\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"NL\",\"num\":\"810433941B01\"}"
+    },
+    {
+      "id": "wellformed:EL094014201",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"EL\",\"vatNumber\":\"094014201\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"EL\",\"num\":\"094014201\"}"
+    },
+    {
+      "id": "wellformed:ESA28015865",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"ES\",\"vatNumber\":\"A28015865\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"ES\",\"num\":\"A28015865\"}"
+    },
+    {
+      "id": "wellformed:IT00488410010",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"IT\",\"vatNumber\":\"00488410010\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"IT\",\"num\":\"00488410010\"}"
+    },
+    {
+      "id": "wellformed:PL5260250995",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"PL\",\"vatNumber\":\"5260250995\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"PL\",\"num\":\"5260250995\"}"
+    },
+    {
+      "id": "wellformed:SE556703748501",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"SE\",\"vatNumber\":\"556703748501\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"SE\",\"num\":\"556703748501\"}"
+    },
+    {
+      "id": "wellformed:BE0403170701",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"BE\",\"num\":\"0403170701\"}"
+    },
+    {
+      "id": "wellformed:LU26375245",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"LU\",\"vatNumber\":\"26375245\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"LU\",\"num\":\"26375245\"}"
+    },
+    {
+      "id": "wellformed:XI123456782",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"XI\",\"vatNumber\":\"123456782\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"} sent={\"kind\":\"get\",\"cc\":\"XI\",\"num\":\"123456782\"}"
+    },
+    {
+      "id": "normalize-input",
+      "req": "R1",
+      "pass": true,
+      "detail": "{\"kind\":\"get\",\"cc\":\"NL\",\"num\":\"810433941B01\"}"
+    },
+    {
+      "id": "name-address",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"status\":\"valid\",\"valid\":true,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"name\":\"ACME TRADING B.V.\",\"address\":\"WESTERSINGEL 108\\n3015LD ROTTERDAM\"}"
+    },
+    {
+      "id": "invalid",
+      "req": "R3",
+      "pass": true,
+      "detail": "{\"status\":\"invalid\",\"valid\":false,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\"}"
+    },
+    {
+      "id": "unverified:busy",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"MS_MAX_CONCURRENT_REQ\"}"
+    },
+    {
+      "id": "unverified:unavailable",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"MS_UNAVAILABLE\"}"
+    },
+    {
+      "id": "unverified:network",
+      "req": "R4",
+      "pass": true,
+      "detail": "{\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"fetch failed\"}"
+    },
+    {
+      "id": "unverified:timeout",
+      "req": "R4",
+      "pass": true,
+      "detail": "10001ms {\"status\":\"unverified\",\"valid\":null,\"countryCode\":\"BE\",\"vatNumber\":\"0403170701\",\"reason\":\"VIES timed out after 10 seconds\"}"
+    },
+    {
+      "id": "uses-options-fetch",
+      "req": "R5",
+      "pass": true,
+      "detail": "global fetch calls: 0"
+    }
+  ]
+}

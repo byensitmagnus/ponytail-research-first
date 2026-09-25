@@ -1,7 +1,7 @@
 ---
 name: ponytail-research
 description: "Research-first before building: find what already solves it on GitHub, plugin stores, and competitors, then reuse, adapt, or build."
-homepage: https://github.com/DietrichGebert/ponytail
+homepage: https://github.com/byensitmagnus/ponytail-research-first
 license: MIT
 ---
 
@@ -26,6 +26,11 @@ fits the stack:
 gh search repos "<feature> <stack>" --sort stars --limit 10 --json fullName,stargazersCount,pushedAt,license,description
 gh search code "<distinctive API, hook, or class name>" --limit 20
 gh repo clone owner/repo <scratch-dir> -- --depth 1   # read it locally
+```
+`gh` not logged in, or `curl` blocked? The same search works unauthenticated
+(10 requests a minute) from any HTTP client:
+```bash
+node -e "fetch('https://api.github.com/search/repositories?q=<terms>&sort=stars&per_page=10').then(r=>r.json()).then(j=>j.items.forEach(i=>console.log(i.stargazers_count,i.full_name,i.pushed_at,i.license?.spdx_id)))"
 ```
 
 **WordPress / WooCommerce**: the plugin directory beats GitHub here.
@@ -71,7 +76,9 @@ battle-tested spec. Study what you can lawfully see as a user:
 | Health | tests or CI, issues answered | open issues piling up, no tests |
 
 Stars are a filter, not proof. A popular project can still fit the task
-badly. For the top one or two, read the files that implement the feature
+badly. A candidate you remember but did not look up in this session is a
+hypothesis: look it up before it goes in the table, or mark it
+`(from memory, unverified)`. For the top one or two, read the files that implement the feature
 (not the README), check which features sit in a paid tier, and record:
 - the exact version, tag, or commit you read
 - the license at that version
