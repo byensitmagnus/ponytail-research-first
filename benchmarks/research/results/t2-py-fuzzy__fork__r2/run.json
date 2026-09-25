@@ -1,0 +1,42 @@
+{
+  "id": "t2-py-fuzzy__fork__r2",
+  "task": "t2-py-fuzzy",
+  "variant": "fork",
+  "rep": 2,
+  "order": 8,
+  "launch": 1,
+  "variantSha": "210b272",
+  "agent": "Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session",
+  "transcriptFormat": "claude-code-subagent",
+  "promptSha256": "4d758f12725cd3d24222d232c78a3b43b3b6b80bfb29c08e4b8cdbe615380e64",
+  "started": "2026-09-25T18:53:15.092Z",
+  "ended": "2026-09-25T18:56:19.814Z",
+  "minutes": 3.08,
+  "usage": {
+    "total_tokens": 73185,
+    "tool_uses": 24,
+    "model_calls": 23,
+    "input_tokens": 186,
+    "cache_read_input_tokens": 1410513,
+    "cache_creation_input_tokens": 43375,
+    "output_tokens": 12629
+  },
+  "sharedContextSha256": "6255d04b37ca76a8f0a5cdf049e373bba308edb61385a8040c3b0e07e237b603",
+  "promptMatches": true,
+  "agentCommits": 0,
+  "contaminated": false,
+  "leaks": [],
+  "forbiddenTools": [],
+  "ghWrites": [],
+  "diff": {
+    "files": 4,
+    "added": 135,
+    "deleted": 3,
+    "numstat": [
+      "52 0 DECISION.md",
+      "28 3 catalog/search.py",
+      "1 0 requirements.txt",
+      "54 0 tests/test_search.py"
+    ]
+  }
+}

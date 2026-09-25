@@ -82,12 +82,14 @@ test('Claude subagent transcripts: research, contamination, forbidden tools, lea
     { type: 'attachment', attachment: { type: 'instructions', text: 'user CLAUDE.md' } },
     tool('WebSearch', { query: 'woocommerce wholesale plugin' }),
     tool('Bash', { command: 'gh search repos "woocommerce b2b" --sort stars' }),
+    tool('Bash', { command: 'npm view exceljs version license' }),
+    tool('Bash', { command: 'pip show rapidfuzz' }),
     tool('Write', { file_path: 'C:/w/DECISION.md' }),
     { type: 'assistant', message: { content: [{ type: 'text', text: 'Research: b2bking@5.2.60 -> reuse' }] } },
   ]);
   assert.equal(clean.contaminated, false);
-  assert.deepEqual(clean.searches, ['woocommerce wholesale plugin']);
-  assert.equal(clean.registryLookups.length, 1);
+  assert.deepEqual(clean.searches, ['woocommerce wholesale plugin', 'gh search repos "woocommerce b2b" --sort stars']);
+  assert.deepEqual(clean.registryLookups, ['npm view exceljs version license']);
   assert.equal(clean.researchedBeforeFirstChange, true);
   assert.equal(clean.researchLine, true);
   const dirty = extractClaude([

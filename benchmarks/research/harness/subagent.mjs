@@ -81,7 +81,10 @@ function prepare(order, only) {
 }
 
 // Evidence from a Claude Code subagent transcript (JSONL).
-const REGISTRY = /(registry\.npmjs\.org|npm (view|info|search)|pypi\.org\/(pypi|project|simple)|pip (index|download|show)|api\.wordpress\.org\/plugins|wordpress\.org\/plugins\/|api\.github\.com|gh (search|repo view|api)|github\.com\/[^/\s]+\/[^/\s'"]+)/i;
+// A search asks "what exists?"; a registry look-up checks one candidate. `pip show` only
+// reads the local install, so it is neither.
+const CLI_SEARCH = /\b(gh search (repos|code|issues)|npm search|pip search)\b/i;
+const REGISTRY = /(registry\.npmjs\.org|npm (view|info)|pypi\.org\/(pypi|project|simple)|pip (index|download)|api\.wordpress\.org\/plugins|wordpress\.org\/plugins\/|api\.github\.com|gh (repo view|api)|github\.com\/[^/\s]+\/[^/\s'"]+)/i;
 const THIRD_PARTY = /(node_modules[\\/]|site-packages[\\/]|downloads\.wordpress\.org|plugins\.(svn|trac)\.wordpress\.org|raw\.githubusercontent\.com|github\.com\/[^/\s]+\/[^/\s]+\/(blob|tree)\/|unpkg\.com|cdn\.jsdelivr\.net)/i;
 const LEAK = /(ponytail-harness|ponytail-bench[\\/](ref-|variants|runs)|PREREGISTRATION|GRADER\.md|[\\/]reference[\\/]|[\\/]accept[\\/])/i;
 const GH_WRITE = /\bgh\s+(repo\s+(create|fork|edit|delete)|pr\s+create|issue\s+create|api\s+.*-X\s*(POST|PUT|PATCH|DELETE))|\bgit\s+push\b|starred/i;
@@ -110,7 +113,8 @@ export function extractClaude(lines) {
         ev.commands++;
         const cmd = String(input.command || '');
         if (GH_WRITE.test(cmd)) ev.ghWrites.push(cmd.slice(0, 200));
-        if (REGISTRY.test(cmd)) { ev.registryLookups.push(cmd.slice(0, 300)); if (firstResearch < 0) firstResearch = i; }
+        if (CLI_SEARCH.test(cmd)) { ev.searches.push(cmd.slice(0, 300)); if (firstResearch < 0) firstResearch = i; }
+        else if (REGISTRY.test(cmd)) { ev.registryLookups.push(cmd.slice(0, 300)); if (firstResearch < 0) firstResearch = i; }
         if (THIRD_PARTY.test(cmd)) ev.thirdPartyReads.push(cmd.slice(0, 300));
       } else if (b.name === 'Read' && THIRD_PARTY.test(input.file_path || '')) ev.thirdPartyReads.push(input.file_path);
       else if (['Write', 'Edit', 'NotebookEdit'].includes(b.name)) { ev.fileChanges++; if (firstChange < 0) firstChange = i; }
@@ -135,6 +139,11 @@ function modelUsage(lines) {
   return { model_calls: byId.size, input_tokens: sum('input_tokens'), cache_read_input_tokens: sum('cache_read_input_tokens'), cache_creation_input_tokens: sum('cache_creation_input_tokens'), output_tokens: sum('output_tokens') };
 }
 
+// Lockfiles, virtualenvs (whatever the agent named them), installed packages and build
+// output are not code the agent wrote; they stay out of the line counts and the patch.
+const NOT_AUTHORED = [':(exclude)*lock*', ':(exclude)*.lock', ':(exclude,glob)**/site-packages/**', ':(exclude,glob)**/node_modules/**',
+  ':(exclude,glob)**/__pycache__/**', ':(exclude,glob)**/Scripts/**', ':(exclude,glob)**/pyvenv.cfg', ':(exclude,glob)dist/**'];
+
 async function finish(id, transcript, tokens, toolUses, ms) {
   const dir = path.join(ROOT, 'runs', id);
   const work = path.join(dir, 'work');
@@ -154,10 +163,14 @@ async function finish(id, transcript, tokens, toolUses, ms) {
   // diff against the baseline commit: an agent may commit its own work, which moves HEAD
   const base = git(work, ['rev-list', '--max-parents=0', 'HEAD']).stdout.trim();
   const agentCommits = Number(git(work, ['rev-list', '--count', 'HEAD']).stdout.trim()) - 1;
-  const numstat = git(work, ['diff', '--cached', '--numstat', base, '--', '.', ':(exclude)*lock*', ':(exclude)*.lock']).stdout.split('\n').filter(Boolean).map((l) => l.split('\t'));
+  const numstat = git(work, ['diff', '--cached', '--numstat', base, '--', '.', ...NOT_AUTHORED]).stdout.split('\n').filter(Boolean).map((l) => l.split('\t'));
   const res = path.join(RESULTS, id);
+  // re-finishing a run keeps its acceptance result (the t1 check boots WordPress for minutes)
+  const acceptFile = path.join(res, 'accept.json');
+  const accepted = fs.existsSync(acceptFile) ? fs.readFileSync(acceptFile) : null;
   fs.rmSync(res, { recursive: true, force: true });
   fs.mkdirSync(res, { recursive: true });
+  if (accepted) fs.writeFileSync(acceptFile, accepted);
   const run = {
     id, task: meta.task, variant: meta.arm, rep: meta.rep, order: meta.order, launch: meta.launch, variantSha: VARIANTS[meta.arm].sha,
     agent: 'Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session', transcriptFormat: 'claude-code-subagent',
@@ -170,7 +183,7 @@ async function finish(id, transcript, tokens, toolUses, ms) {
   };
   fs.writeFileSync(path.join(res, 'run.json'), JSON.stringify(run, null, 2) + '\n');
   fs.writeFileSync(path.join(res, 'events.jsonl.gz'), zlib.gzipSync(raw));
-  fs.writeFileSync(path.join(res, 'diff.patch'), git(work, ['diff', '--cached', base, '--', '.', ':(exclude)*lock*', ':(exclude)*.lock', ':(exclude)data/*']).stdout);
+  fs.writeFileSync(path.join(res, 'diff.patch'), git(work, ['diff', '--cached', base, '--', '.', ...NOT_AUTHORED, ':(exclude)data/*']).stdout);
   fs.writeFileSync(path.join(res, 'last.md'), ev.finalText);
   if (fs.existsSync(path.join(work, 'DECISION.md'))) fs.copyFileSync(path.join(work, 'DECISION.md'), path.join(res, 'DECISION.md'));
   const deps = await Promise.all(addedDeps(meta.task, work, path.join(BENCH, 'tasks', meta.task, 'fixture')).map(verify));

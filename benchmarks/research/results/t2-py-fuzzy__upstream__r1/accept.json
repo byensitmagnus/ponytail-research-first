@@ -1,0 +1,125 @@
+{
+  "task": "t2-py-fuzzy",
+  "checks": [
+    {
+      "id": "install-requirements",
+      "req": "R5",
+      "pass": true,
+      "detail": "\r\n[notice] A new release of pip is available: 25.0.1 -> 26.2.1\r\n[notice] To update, run: C:\\Users\\Usmo1\\AppData\\Local\\Temp\\t2-venv-SrNTh1\\Scripts\\python.exe -m pip install --upgrade pip\r\n"
+    },
+    {
+      "id": "own-tests",
+      "req": "R5",
+      "pass": true,
+      "detail": "........\r\n----------------------------------------------------------------------\r\nRan 8 tests in 7.082s\r\n\r\nOK\r\n"
+    },
+    {
+      "id": "import",
+      "req": "interface",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "id": "typo:lenvo thinkpd x1 carbn",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Lenovo ThinkPad X1 Carbon Gen 11 16GB 1TB SSD Grey', 'Lenovo ThinkPad X1 Carbon Gen 11 32GB 1TB SSD Grey', 'Lenovo ThinkPad X1 Carbon Gen 12 16GB 1TB SSD Grey']"
+    },
+    {
+      "id": "typo:samsng galxy s24 ultra",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Samsung Galaxy S24 Ultra 1TB Blue', 'Samsung Galaxy S24 Ultra 1TB Black', 'Samsung Galaxy S24 Ultra 1TB Green']"
+    },
+    {
+      "id": "typo:sony wh1000xm5",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Sony WH-1000XM5 Blue', 'Sony WH-1000XM5 Sand', 'Sony WH-1000XM5 Black']"
+    },
+    {
+      "id": "typo:iphone 15 pro mx",
+      "req": "R1",
+      "pass": false,
+      "detail": "['Apple iPhone 15 Pro 128GB Black', 'Apple iPhone 15 Pro 128GB Black (Open Box)', 'Apple iPhone 15 Pro 128GB Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "typo:dell ultrashap u2723qe",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Dell UltraSharp U2723QE VESA only', 'Dell UltraSharp U2723QE with stand', 'Dell UltraSharp U3223QE VESA only']"
+    },
+    {
+      "id": "typo:macbok air 15 m3",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Apple MacBook Air 15 M3 16GB 1TB SSD Black', 'Apple MacBook Air 15 M3 16GB 1TB SSD Black (Open Box)', 'Apple MacBook Air 15 M3 16GB 1TB SSD Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "typo:logitec mx mastr 3s",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Logitech MX Master 3S Black UK layout', 'Logitech MX Master 3S Black US layout', 'Logitech MX Master 3S White UK layout']"
+    },
+    {
+      "id": "typo:oled zenbook 14 asus",
+      "req": "R1",
+      "pass": true,
+      "detail": "['ASUS ZenBook 14 OLED 16GB 1TB SSD Black', 'ASUS ZenBook 14 OLED 16GB 1TB SSD Black (Open Box)', 'ASUS ZenBook 14 OLED 16GB 1TB SSD Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "typo:playstaton 5 slim",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Sony PlayStation 5 Slim Bundle', 'Sony PlayStation 5 Slim Standard', 'Sony PlayStation 5 Pro Bundle']"
+    },
+    {
+      "id": "typo:airpods pro2",
+      "req": "R1",
+      "pass": false,
+      "detail": "['Apple AirPods 4 Black', 'Apple AirPods 4 Black (Open Box)', 'Apple AirPods 4 Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "typo:galaxy zfold 6",
+      "req": "R1",
+      "pass": false,
+      "detail": "[]"
+    },
+    {
+      "id": "typo:bose quietcomfort ultra headphone",
+      "req": "R1",
+      "pass": true,
+      "detail": "['Bose QuietComfort Ultra Headphones Blue', 'Bose QuietComfort Ultra Headphones Sand', 'Bose QuietComfort Ultra Headphones Black']"
+    },
+    {
+      "id": "exact:ThinkPad T14 Gen 5",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Lenovo ThinkPad T14 Gen 5 16GB 1TB SSD Black', 'Lenovo ThinkPad T14 Gen 5 16GB 1TB SSD Black (Open Box)', 'Lenovo ThinkPad T14 Gen 5 16GB 1TB SSD Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "exact:Pixel 9 Pro",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Google Pixel 9 Pro 128GB Black', 'Google Pixel 9 Pro 128GB Black (Open Box)', 'Google Pixel 9 Pro 128GB Black (Refurbished Grade A)']"
+    },
+    {
+      "id": "exact:Xbox Series X",
+      "req": "R2",
+      "pass": true,
+      "detail": "['Microsoft Xbox Series X Bundle', 'Microsoft Xbox Series X Bundle (Open Box)', 'Microsoft Xbox Series X Bundle (Refurbished Grade A)']"
+    },
+    {
+      "id": "latency-p95",
+      "req": "R3",
+      "pass": true,
+      "detail": "p95=20.0ms over 150 queries"
+    },
+    {
+      "id": "licenses-permissive",
+      "req": "R4",
+      "pass": true,
+      "detail": "{'offenders': [], 'installed': ['rapidfuzz==3.8.1: MIT | License :: OSI Approved :: MIT License']}"
+    }
+  ]
+}

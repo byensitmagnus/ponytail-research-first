@@ -1,0 +1,42 @@
+{
+  "id": "t1-wc-b2b__fork__r1",
+  "task": "t1-wc-b2b",
+  "variant": "fork",
+  "rep": 1,
+  "order": 4,
+  "launch": 2,
+  "variantSha": "210b272",
+  "agent": "Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session",
+  "transcriptFormat": "claude-code-subagent",
+  "promptSha256": "397f718724516dddeafa2f1ec76dec454480b3b479cd5d42027ab0ab5973b474",
+  "started": "2026-09-25T18:36:42.983Z",
+  "ended": "2026-09-25T18:48:17.979Z",
+  "minutes": 11.58,
+  "usage": {
+    "total_tokens": 82677,
+    "tool_uses": 25,
+    "model_calls": 27,
+    "input_tokens": 220,
+    "cache_read_input_tokens": 1776815,
+    "cache_creation_input_tokens": 52591,
+    "output_tokens": 15959
+  },
+  "sharedContextSha256": "6255d04b37ca76a8f0a5cdf049e373bba308edb61385a8040c3b0e07e237b603",
+  "promptMatches": true,
+  "agentCommits": 0,
+  "contaminated": false,
+  "leaks": [],
+  "forbiddenTools": [],
+  "ghWrites": [],
+  "diff": {
+    "files": 4,
+    "added": 367,
+    "deleted": 1,
+    "numstat": [
+      "68 0 DECISION.md",
+      "5 1 staging/blueprint.json",
+      "147 0 wp-content/mu-plugins/shop-b2b.php",
+      "147 0 wp-content/plugins/shop-b2b/shop-b2b.php"
+    ]
+  }
+}
