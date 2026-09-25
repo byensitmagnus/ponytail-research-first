@@ -1,0 +1,18 @@
+{
+  "what": "Live Codex check of /ponytail level switching in one session (codex exec, then exec resume for each turn), isolated home, 2026-09-25",
+  "codex": "0.155.0-alpha.16.4, gpt-6-sol",
+  "turns": ["/ponytail ultra", "which level is active?", "/ponytail off", "is ponytail active?"],
+  "before_fix": {
+    "plugin": "fork 210b272 (4.10.2)",
+    "replies": ["Ponytail ultra is active. Ready for the task.", "full", "Ponytail mode is off.", "Yes, Ponytail is active at full level."],
+    "input_tokens_per_turn": [163676, 186662, 211627, 238524],
+    "verdict": "broken: resume re-ran SessionStart, which always wrote the default mode"
+  },
+  "after_fix": {
+    "plugin": "research-benchmark 3ab6f02 (4.10.4)",
+    "replies": ["Ponytail ultra mode is active.", "ultra", "Ponytail mode is off.", "No, Ponytail is off."],
+    "input_tokens_per_turn": [143039, 165993, 190900, 215849],
+    "verdict": "works: level and off survive resume"
+  },
+  "regression_test": "tests/level-persist.test.js (fails on the old hook, passes on the fix)"
+}

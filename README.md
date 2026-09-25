@@ -182,12 +182,12 @@ Three different mechanisms: a **lifecycle hook** injects the ruleset (with the r
 
 | Host | Mechanism | Verified on 2026-09-25 | Not verified |
 |---|---|---|---|
-| Codex | lifecycle hooks + skills | clean install from the commands above; fresh isolated sessions quote rung 7 | live `/ponytail off` and level switches (covered by hook tests only) |
+| Codex | lifecycle hooks + skills | clean install from the commands above; fresh isolated sessions quote rung 7; live `/ponytail ultra` and `/ponytail off` survive a resumed session (fixed in 4.10.4) | nothing listed here |
 | Claude Code | lifecycle hooks + skills | clean install from the commands above; hook output | a live fresh session (headless CLI not logged in on the test machine) |
-| Cursor | lifecycle hooks | installer keeps other hooks on install, re-install and uninstall; hook output | a live Cursor chat |
-| ZCode | lifecycle hooks | JSON hook output (ZCode drops non-JSON) | a live ZCode session |
+| Cursor | lifecycle hooks | installer keeps other hooks on install, re-install and uninstall; hook output | a live Cursor chat (no headless Cursor agent on the test machine) |
+| ZCode | lifecycle hooks + skills | JSON hook output (ZCode drops non-JSON); ZCode's own CLI lists all seven skills | a live chat (the ZCode CLI has no model configured on the test machine) |
 | Grok Build | skills + commands | clean install from the command above | a live session (CLI not signed in) |
-| Kimi CLI / Kimi Desktop | skills | Kimi's own skill discovery finds all seven | a live session (no model configured) |
+| Kimi CLI / Kimi Desktop | skills | Kimi's own skill discovery finds all seven, for the CLI and for Kimi Desktop's private home | a live session (Kimi CLI has no model configured on the test machine) |
 | Windsurf, Cline, Copilot, Kiro, Qoder, Antigravity, Zed, Amp, Jules | auto-loaded rule | rule copies match `AGENTS.md` (CI) | everything else |
 
 ## Commands

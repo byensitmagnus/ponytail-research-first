@@ -71,6 +71,16 @@ Blind grading of the pilot: see section 6.
 | Feature: GDPR cookie consent, plan only | upstream | 2 searches (EDPB, Datatilsynet); no dependency; did not consider existing consent libraries |
 | same | fork | 2 searches (EDPB, Datatilsynet); no dependency; its `Research:` line names Klaro and vanilla-cookieconsent as rejected alternatives, **but the transcript shows no look-up of either** (a look-up shows Klaro's licence as `NOASSERTION`) |
 
+Level switching, live in Codex (`results/probes/level-switch-live.json`): with
+the pre-registered fork (`210b272`), `/ponytail ultra` was reported as "full"
+on the next resumed turn and `/ponytail off` was "active at full level" again.
+Root cause, inherited from upstream: SessionStart fires on resume and compact
+too, and `ponytail-activate.js` always wrote the default level, so a resume or
+`/compact` reset the chosen level and switched ponytail back on after "stop
+ponytail". Fixed in 4.10.4 (resume/compact keep the chosen level, including
+off); `tests/level-persist.test.js` fails on the old hook and passes on the
+fix; the same live check then answered "ultra" and "No, Ponytail is off".
+
 In none of the five Codex sessions did the agent open `/ponytail-research` by
 itself; the always-injected rung 7 does the work. The skill is effectively
 opt-in (explicit `/ponytail-research` or `@ponytail-research`).
@@ -92,9 +102,12 @@ uninstall; Kimi's own discovery finds all seven skills. Found and fixed: the
 ZCode snippet lacked the `UserPromptSubmit` hook (so level switches could not
 work); Kimi Desktop uses a private home the README did not mention; with
 `merge_all_available_skills = false` a new `~/.kimi/skills` hides
-`~/.claude/skills`. Live sessions were only possible in Codex: the Claude
-Code CLI, Kimi CLI and Grok CLI are not logged in on this machine, and Cursor
-and ZCode have no headless mode here.
+`~/.claude/skills`. ZCode's own CLI lists all seven skills. Live sessions were only
+possible in Codex: the Claude Code, Kimi and Grok CLIs are not logged in or
+have no model configured on this machine, the ZCode CLI has no model
+configured, Cursor has no headless agent installed and screen control only
+gets click access to IDEs, and screen control of Kimi Desktop and ZCode was not
+granted.
 
 ## 6. Blind grading of the pilot
 
@@ -124,15 +137,17 @@ problem. The grader also caught a blinding leak (run folder names in
   Weekly window resets 2026-09-26 around 12:30 local time.
 - Cap (pre-registered): stop if the estimate or running total exceeds 50 points.
 
-Options: run after the reset (recommended, `node harness/run.mjs run 1 2 3 4 5
-6 7 8`, then `accept`, `evidence`, `blind`, grading), or buy Codex credits to
-run now. No paid service was created.
+Blocked by plan quota, which only the account owner can change: either wait
+for the weekly window to reset, or buy Codex credits. Then:
+`node harness/run.mjs run 1 2 3 4 5 6 7 8`, `accept`, `evidence`, `blind`, blind
+grading, and this report. No paid service was created.
 
 ## 8. Verdict
 
 - **Daily driver: yes.** Installs and updates pull the fork on every host
   tested, the rule reaches Codex sessions live, it stayed out of a small
-  bugfix, and the test suite and CI are green. Hosts other than Codex are
+  bugfix, `/ponytail` levels and off now survive resume and compact (fixed in
+  4.10.4, live-verified in Codex), and the test suite and CI are green. Hosts other than Codex are
   verified up to installation and hook/skill output, not in a live session.
 - **Broad promotion: not yet.** The benchmark that would show whether the
   research step helps has not run. The pilot shows both arms passing, the fork
