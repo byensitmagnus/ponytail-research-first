@@ -214,6 +214,17 @@ function accept(id) {
 const [cmd, ...args] = process.argv.slice(2);
 if (cmd === 'plan') console.log(JSON.stringify(plan(), null, 2));
 else if (cmd === 'accept') for (const id of args) accept(id);
+else if (cmd === 'probe') {
+  // Small activation probes (not part of the 16-run benchmark): probe <task> <variant...>
+  const [task, ...variants] = args;
+  await Promise.all(variants.map((v) => runOne(task, v, 1, 0)));
+  fs.mkdirSync(path.join(RESULTS, 'probes'), { recursive: true });
+  for (const v of variants) {
+    const id = runId(task, v, 1);
+    fs.rmSync(path.join(RESULTS, 'probes', id), { recursive: true, force: true });
+    fs.renameSync(path.join(RESULTS, id), path.join(RESULTS, 'probes', id));
+  }
+}
 else if (cmd === 'prepare') prepare();
 else if (cmd === 'run') {
   if (!EXE) throw new Error('set CODEX_EXE');

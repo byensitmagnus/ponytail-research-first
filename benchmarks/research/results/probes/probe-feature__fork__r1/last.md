@@ -1,0 +1,1 @@
+I wrote [PLAN.md](C:/Users/Usmo1/ponytail-bench/runs/probe-feature__fork__r1/work/PLAN.md) after checking the current Analytics loading path and consent guidance. It proposes loading Analytics only after an explicit choice, with equally easy rejection and withdrawal. No dependency is proposed or added, so `DECISION.md` was not needed. No implementation changes were made.

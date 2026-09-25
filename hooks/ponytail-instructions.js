@@ -54,7 +54,7 @@ function getFallbackInstructions(mode) {
     '4. Does a native platform feature cover it? Use it.\n' +
     '5. Does an already-installed dependency solve it? Use it.\n' +
     '6. Can this be one line? Make it one line.\n' +
-    '7. Already built out there? For anything bigger than a function, research first: GitHub by stars, the platform\'s plugin or app store, competitors\' products. Reuse or adapt a maintained, license-compatible project; nothing fits → take the principle and write your own. Time-box it to 3-5 searches; stars pick the candidates, the code decides. Leave one line: `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | building`.\n' +
+    '7. Already built out there? For anything bigger than a function, research first: GitHub by stars, the platform\'s plugin or app store, competitors\' products. Reuse or adapt a maintained, license-compatible project; nothing fits → take the principle and write your own. Time-box it to 3-5 searches; stars pick the candidates, the code decides. Leave one line: `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | building`; a candidate not looked up in this session is marked (from memory, unverified).\n' +
     '8. Only then: write the minimum code that works.\n\n' +
     'Bug fix = root cause, not symptom: grep every caller of the function you touch and fix the shared function once (a smaller diff than one guard per caller); patching only the path the ticket names leaves a sibling caller broken.\n\n' +
     '## Rules\n\n' +

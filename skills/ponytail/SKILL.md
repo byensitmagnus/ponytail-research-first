@@ -78,6 +78,8 @@ Time-box it: 3–5 searches, about ten minutes. Stars pick the candidates, the
 code decides: read the part that does the work and check what sits in a paid
 tier. Leave one line before the code:
 `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
+Only name a candidate you looked up in this session; one you only remember is
+marked `(from memory, unverified)`.
 Deep version: `/ponytail-research`.
 
 Example: B2B login with wholesale prices on WooCommerce. GitHub has nothing

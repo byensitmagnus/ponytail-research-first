@@ -58,6 +58,7 @@ const INVARIANTS = [
   'Already built out there',               // research-first rung
   'never bypass licensing or DRM',         // research-first trust carve-out
   'decompile or decrypt unless the license and the law clearly allow it', // lawful competitor study
+  'from memory, unverified',               // a Research: line names only looked-up candidates
   'not task scope, autonomy, verification, or completion', // laziness never cuts accepted scope
 ];
 
