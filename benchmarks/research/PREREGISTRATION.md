@@ -173,3 +173,20 @@ Playground server running after every check (async `taskkill` followed by
 `process.exit`), and the first Store API request after boot could return an
 empty body. Both fixed; the reference passes 6/6 twice in a row and no
 server is left behind.
+
+## Amendment 2 (2026-09-25, after round 1, before the re-run of pairs 2–8)
+
+Round 1 showed that a Claude Code subagent receives its parent session's
+instruction files. The parent ran in the fork repo, so from pair 2 on both
+arms also got the repo's `AGENTS.md` (the fork ladder) and the project memory
+index. Pairs 2–8 are therefore excluded and re-run; pair 1 is kept (its
+subagents got only the user's global `CLAUDE.md`, identical in both arms).
+
+- Contamination now also means: any instruction file other than the user's
+  global `CLAUDE.md` that carries either ladder. Checked per run from the
+  transcript; a contaminated run is excluded and re-run.
+- The orchestrating session runs from a folder without project instructions.
+- `~/.claude/.ponytail-active` is held read-only at `off` for the whole run,
+  so no new Claude session can switch the hook back on mid-run.
+- Tasks, prompts, acceptance checks, order and grading are unchanged; the t1
+  staging check only cleans up its temporary WordPress site now.

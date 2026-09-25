@@ -1,11 +1,13 @@
 # Research-first benchmark: report
 
-Status on 2026-09-25: harness, tasks, ground truth and grading are
-pre-registered and validated; the pilot and four activation probes ran; **the
-16-run benchmark itself has not run yet** because the ChatGPT plan it uses is
-at 96% of its weekly window (see *Decision needed*). Nothing below supports a
-claim that the research step makes agents better or worse. It shows the
-benchmark works, where the rule behaves as intended, and two problems it found.
+Status on 2026-09-25, evening: the 16 runs moved from Codex (plan quota) to
+Claude Haiku 4.5 subagents (Amendment 1). All 16 ran and were graded blind,
+but **only pair 1 (2 runs) is clean**: from pair 2 on, the orchestrating
+session's own instruction files, the fork repo's `AGENTS.md` with the research
+rung among them, reached the subagents of **both** arms. Those 14 runs are
+excluded (kept in `results/excluded/`) and pairs 2–8 are re-run with the
+orchestrator in a neutral folder (section 7). Nothing below supports a claim
+that the research step makes agents better or worse.
 
 ## 1. State of the fork before this work
 
@@ -125,32 +127,107 @@ the transcript shows it never opened: unbacked claims are not a fork-only
 problem. The grader also caught a blinding leak (run folder names in
 `last.md` file links); `harness/blind.mjs` now scrubs them.
 
-## 7. Decision needed: run the 16 runs
+## 7. The 16 runs on Claude Haiku 4.5 (Amendment 1)
 
-- Measured: the pilot pair (≈ 3.0 M input tokens, 18 k output) and the three
-  probes (≈ 0.46 M) moved the plan from 96% to 96% (under one point; Codex
-  reports whole percents). The user's own Codex work moved it 89% → 96% during
-  the same day.
-- Estimate for all 16 runs (8 pairs; t1 and t4 run longer than t3): 5–13
-  points of the weekly window.
-- Available now: 4 points (the harness brakes at 98% so the user keeps some).
-  Weekly window resets 2026-09-26 around 12:30 local time.
-- Cap (pre-registered): stop if the estimate or running total exceeds 50 points.
+Codex was at 96% of its weekly window, so the user switched the agent to
+Claude Haiku 4.5 subagents started by a Claude Code session. Tasks, ground
+truth, acceptance checks, order and blind grading are unchanged. Each arm's
+rules are the exact text its SessionStart hook injects (`results/haiku-rules/`,
+upstream 5,252 chars, fork 7,951), placed at the top of a prompt that is
+otherwise identical; `promptMatches` proves each subagent received its
+`prompt.txt`.
 
-Blocked by plan quota, which only the account owner can change: either wait
-for the weekly window to reset, or buy Codex credits. Then:
-`node harness/run.mjs run 1 2 3 4 5 6 7 8`, `accept`, `evidence`, `blind`, blind
-grading, and this report. No paid service was created.
+### Clean runs: pair 1 (t3-node-vat, rep 2)
 
-## 8. Verdict
+| Arm | Acceptance | Blind grade | Minutes | Output tokens | Lines added | Searches | What went wrong |
+|---|---|---|---|---|---|---|---|
+| upstream | 24/28 | partial | 3.1 | 15 k | +366 | 0 | official SOAP endpoint, offline tests; DE, NL, XI and AT formats reject real numbers |
+| fork | 14/28 | fail | 4.8 | 16 k | +500 | 0 | calls `…/vies/api/checkVat`, which does not exist, so nothing is ever verified; DECISION.md calls it the official REST endpoint |
+
+Neither arm looked anything up. On this pair the fork arm's rung 7 did not
+start any research, and its invented endpoint is the failure research was
+meant to prevent.
+
+### Excluded: pairs 2–8 (14 runs), and why
+
+The orchestrating session ran in the fork repo. Claude Code gives a subagent
+the parent session's instruction files, and from pair 2 on those included the
+repo's `AGENTS.md` (the fork ladder, rung 7 included) and the project memory
+index, in **both** arms. The contamination check looked only at hook
+injections and missed it; `finish` now lists every instruction file except
+the user's global `CLAUDE.md` and marks a run contaminated when one carries
+either ladder (`tests/research-benchmark.test.js`). The runs are kept, with
+their blind grades, in `results/excluded/` and `results/excluded/round1-grading/`.
+They are not evidence for the research question. What they show:
+
+| | upstream | fork |
+|---|---|---|
+| Blind grade, 7 runs each | 1 pass, 3 partial, 3 fail | 5 partial, 2 fail |
+| Runs that searched at all | 0 | 2 (t3: 4 `gh search repos` + 1 `npm search`; t2: 1 `gh search repos`) |
+| Pages opened / third-party code read | 0 / 0 | 0 / 0 |
+
+With rung 7 in context for both arms, Haiku researched in 2 of 14 runs and
+never opened what it found. The run that searched most (t3) still failed and
+claimed it had "examined candidate implementations". Unbacked research claims
+appear in **both** arms (DECISION.md files that say plugin options were
+reviewed, with no look-up in the transcript); two upstream runs called
+GPL-2 fuzzywuzzy "MIT".
+
+### Also found and fixed in the harness during these runs
+
+- The Windows task `.output` file is empty; the transcript is
+  `subagents/agent-<id>.jsonl`. `finish` refuses an empty transcript.
+- Agents may commit; diffs are taken against the baseline commit.
+- A new Claude session resets `~/.claude/.ponytail-active` to `full`; a
+  subagent that resumed after its own background job got the hook ruleset
+  (t1 fork r2, re-run). The flag is now held read-only at `off` during runs.
+- The t1 staging check left a ~250 MB WordPress site in TEMP after every run
+  (killed with `taskkill /F`); 24 of them filled the C: drive and both runs of
+  one pair hit `ENOSPC` (re-run). The check now gives Playground a private
+  TEMP and deletes it; verified reference 8/8, nothing left behind.
+- Line counts skip virtualenvs, `site-packages`, `node_modules`, `dist`
+  (a `venv/` had counted 149,739 lines); `gh search`/`npm search` count as
+  searches, `pip show` (local metadata) does not count as research.
+
+### Cost
+
+Haiku subagents run inside the user's Claude plan; no paid service was
+created. Summed over every model call of the 16 runs: 3.4 k uncached input,
+27.6 M cache-read, 0.86 M cache-write and 0.20 M output tokens. The 4 blind
+graders used a further 0.51 M tokens of final context. At Haiku 4.5's API list
+price this would be roughly $5 for this round of 16 runs (upstream $2.45, fork $2.39)
+plus $1 for the excluded re-runs.
+
+### Re-run of pairs 2–8
+
+Blocked on one step the session cannot take itself: moving the orchestrating
+Claude Code session to the neutral folder `C:\Users\Usmo1\ponytail-haiku`
+(no project instructions) takes effect only once the session is idle and the
+user sends a message. Renaming the files on disk does not help: the session
+keeps the instruction files it loaded. Everything is prepared: `prepare 2`…`8`
+done, prompts unchanged, and `finish` will now reject a contaminated run.
+
+## 8. Open problems
+
+- The research rung does not make Haiku 4.5 research: 0 of 1 clean fork run,
+  2 of 7 fork runs with the rule in context twice. A stronger model (the
+  Codex pilot searched in both arms) may behave differently; measured here
+  only on Haiku.
+- Unbacked "Research:" and "reviewed alternatives" claims happen in both arms.
+  The 4.10.3 rule ("only name a candidate you looked up; mark the rest
+  `(from memory, unverified)`") targets this but is not in the pinned fork
+  arm, so it is not measured.
+- Live activation outside Codex (Claude Code, Cursor, Kimi, Grok, ZCode) is
+  verified up to installation and hook/skill output only.
+
+## 9. Verdict
 
 - **Daily driver: yes.** Installs and updates pull the fork on every host
   tested, the rule reaches Codex sessions live, it stayed out of a small
-  bugfix, `/ponytail` levels and off now survive resume and compact (fixed in
-  4.10.4, live-verified in Codex), and the test suite and CI are green. Hosts other than Codex are
-  verified up to installation and hook/skill output, not in a live session.
-- **Broad promotion: not yet.** The benchmark that would show whether the
-  research step helps has not run. The pilot shows both arms passing, the fork
-  about 10% slower with more tokens, and a blind grader rating the upstream
-  run's solution as slightly more accurate; the probes show one fork research
-  claim not backed by a look-up. Promote after the 16 runs, on their numbers.
+  bugfix, `/ponytail` levels and off survive resume and compact (4.10.4), and
+  the tests and CI are green. It did not make any run worse in a way the
+  clean pair can attribute to it.
+- **Broad promotion: no.** There is no evidence that the research step helps:
+  on Haiku 4.5 it rarely fires, and when it fired the result was not better.
+  The claim in the README and any promo must stay at "asks the agent to look
+  first", not "makes agents better".
