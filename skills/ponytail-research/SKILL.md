@@ -54,12 +54,18 @@ pip index versions <pkg>
 ```
 
 **Competitors**: a product that already ships the feature is a free,
-battle-tested spec.
-- Web app or shop: page source, network tab, public JS and source maps,
+battle-tested spec. Study what you can lawfully see as a user:
+- Web app or shop: the UI and flows, page source, network tab, public JS,
   theme and plugin names in the HTML (`/wp-content/plugins/<slug>/`).
-- Electron desktop app: `resources/app.asar` → `npx @electron/asar extract app.asar out/`.
-- .NET app: `ilspycmd <assembly.dll>`. Any app: the config, JSON, or SQLite it
-  writes under `%APPDATA%`, `~/Library/Application Support`, or `~/.config`.
+- Desktop app you are licensed to use: its behavior, docs, settings, and the
+  config, JSON, or SQLite it writes under `%APPDATA%`,
+  `~/Library/Application Support`, or `~/.config`. Code it ships as plain
+  source (a plugin zip, unobfuscated JavaScript) can be read.
+- Decompiling binaries, deobfuscating, or decrypting is not assumed allowed.
+  In the EU a lawful user may observe, study, and test a program while
+  running it (Directive 2009/24/EC, Art. 5(3)); decompiling is allowed only
+  for interoperability, under the conditions of Art. 6. Elsewhere a license
+  can forbid more. Unsure → don't, and ask.
 - Take the data model, flow, edge cases, and UX. Not the code.
 
 ## 3. Score the candidates
@@ -72,10 +78,16 @@ battle-tested spec.
 | License | MIT, Apache-2.0, BSD; GPL inside GPL projects (WordPress) | none = all rights reserved = inspiration only |
 | Health | tests or CI, issues answered | open issues piling up, no tests |
 
-Stars are a filter, not proof. For the top one or two, read the files that
-implement the feature (not the README) and write down the principle in two
-lines: where the data lives, which hook or extension point it uses, which
-edge cases it handles.
+Stars are a filter, not proof. A popular project can still fit the task
+badly. For the top one or two, read the files that implement the feature
+(not the README), check which features sit in a paid tier, and record:
+- the exact version, tag, or commit you read
+- the license at that version
+- the files or functions you read
+- why it fits this task, or where it doesn't
+
+Then write the principle in two lines: where the data lives, which hook or
+extension point it uses, which edge cases it handles.
 
 ## 4. Decide
 
@@ -96,7 +108,8 @@ A dependency is also cost: a few lines you can write still beat a package
 - Official download sources only. Run nothing untrusted outside a sandbox or
   VM; reading files needs no execution.
 - Never bypass licensing, DRM, or obfuscation, and never break a site's terms
-  to scrape it.
+  to scrape it. No decompiling or decrypting unless the license and the law
+  clearly allow it.
 - Supply chain: check the maintainer, the exact package name (typosquats),
   and install or postinstall scripts before adding anything.
 - Never paste secrets, credentials, or customer data into a third-party tool.
@@ -105,12 +118,13 @@ A dependency is also cost: a few lines you can write still beat a package
 
 ```
 ## Research: <feature> (<stack>)
-| Candidate | Signal | License | Fit |
-|---|---|---|---|
-| <owner/repo or slug> | ★ / installs, last push | <license> | covers X, not Y |
+| Candidate | Version / commit | Signal | License | Fit |
+|---|---|---|---|---|
+| <owner/repo or slug> | <tag, version, or sha> | ★ / installs, last push | <license> | covers X, not Y |
 
+Read: <files or functions read, at that version>
 Principle: <two lines: data model, extension point, edge cases>
-Decision: reuse | adapt | inspired by | build — <one line why>
+Decision: reuse | adapt | inspired by | build — <why it fits this task, not just its stars>
 Next: <smallest integration step>
 ```
 
@@ -120,16 +134,23 @@ Next: <smallest integration step>
 
 ```
 ## Research: B2B wholesale prices (WooCommerce)
-| Candidate | Signal | License | Fit |
-|---|---|---|---|
-| woocommerce-wholesale-prices | 20k installs, 4.8★ (546), updated 2026-08 | GPL | role-based prices, wholesale role |
-| b2bking-wholesale-for-woocommerce | 10k installs, 4.9★ (108), updated 2026-09 | GPL | B2B registration, groups, price tiers |
-| GitHub "woocommerce b2b" | top repo 1★ | mixed | nothing maintained |
+| Candidate | Version / commit | Signal | License | Fit |
+|---|---|---|---|---|
+| b2bking-wholesale-for-woocommerce | 5.2.60 | 10k installs, 4.9★ (108), updated 2026-09-11 | GPL | free: customer groups, per-group prices, account approval. Premium: B2B registration forms |
+| woocommerce-wholesale-prices | 2.2.9 | 20k installs, 4.8★ (546), updated 2026-08-03 | GPL | wholesale prices per role |
+| GitHub "woocommerce b2b" | — | best repo 1★ | mixed | nothing maintained |
 
-Principle: a customer role plus per-role price meta on each product; prices
-swap at render and at cart, so the B2C shop stays untouched.
-Decision: reuse — B2BKing covers registration and per-group prices out of the box.
-Next: install on staging, create a "wholesale" group, set prices on 3 products, test B2C vs B2B login.
+Read: b2bking 5.2.60 public/class-b2bking-public.php. The group is user meta
+`b2bking_customergroup`; the price is product meta
+`b2bking_regular_product_price_group_<id>`, applied through the
+`woocommerce_product_get_price` filters and `woocommerce_before_calculate_totals`.
+Principle: a group on the customer plus a per-group price on each product,
+swapped by WooCommerce's own price filters at render and in the cart, so the
+B2C shop stays untouched.
+Decision: reuse B2BKing free for groups and per-group prices. Its B2B
+registration form is Premium: buy it, or let customers register normally and
+approve them into the B2B group in the free customer hub.
+Next: install on staging, create a "wholesale" group, price 3 products, test a B2C and a B2B login.
 ```
 
-Signals from WordPress.org on 2026-09-25; re-run the search, numbers move.
+Signals from WordPress.org and its plugin SVN on 2026-09-25; re-run the search, numbers move.

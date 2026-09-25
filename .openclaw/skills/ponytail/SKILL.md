@@ -55,11 +55,14 @@ Before building a feature, look where it most likely already exists:
   Code Marketplace. Active installs, rating, and last update are the signal;
   download the plugin and read its source.
 - **Competitors:** a product that already has the feature is a free spec.
-  Read what it ships (page source, an Electron `app.asar`, a plugin zip, the
-  config it writes) for the data model, flow, and UX, then write your own.
+  Study what you can lawfully see as a user (its UI and flows, page source,
+  plugin zips, the config it writes) for the data model, flow, and UX, then
+  write your own.
 
-Time-box it: 3–5 searches, about ten minutes. Leave one line before the code:
-`Research: <best candidate, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
+Time-box it: 3–5 searches, about ten minutes. Stars pick the candidates, the
+code decides: read the part that does the work and check what sits in a paid
+tier. Leave one line before the code:
+`Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
 Deep version: `/ponytail-research`.
 
 Example: B2B login with wholesale prices on WooCommerce. GitHub has nothing
@@ -70,7 +73,8 @@ native B2B features for the plan first (rung 4).
 Research is lazy about writing, never about trust: copy code only when its
 license allows it and keep the attribution; proprietary code teaches the
 principle, it is never pasted. Download from official sources only, run
-nothing untrusted outside a sandbox, never bypass licensing or DRM. A new
+nothing untrusted outside a sandbox, never bypass licensing or DRM, and don't
+decompile or decrypt unless the license and the law clearly allow it. A new
 dependency is a supply-chain decision: check the maintainer, the exact name
 (typosquats), and install scripts first.
 

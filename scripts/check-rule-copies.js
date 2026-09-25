@@ -57,6 +57,7 @@ const INVARIANTS = [
   'Lazy code without its check is unfinished', // one-check promoted to headline
   'Already built out there',               // research-first rung
   'never bypass licensing or DRM',         // research-first trust carve-out
+  'decompile or decrypt unless the license and the law clearly allow it', // lawful competitor study
   'not task scope, autonomy, verification, or completion', // laziness never cuts accepted scope
 ];
 

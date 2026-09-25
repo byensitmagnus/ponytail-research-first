@@ -1,6 +1,7 @@
 {
-  "name": "@dietrichgebert/ponytail",
-  "version": "4.10.1",
+  "name": "ponytail-research-first",
+  "version": "4.10.2",
+  "private": true,
   "description": "Lazy senior dev mode for AI agents. The best code is the code you never wrote.",
   "keywords": ["opencode-plugin", "opencode", "ponytail", "pi-package", "pi", "skills", "qoder"],
   "license": "MIT",
@@ -8,13 +9,13 @@
     "name": "Dietrich Gebert",
     "url": "https://github.com/DietrichGebert"
   },
-  "homepage": "https://github.com/DietrichGebert/ponytail",
+  "homepage": "https://github.com/byensitmagnus/ponytail-research-first",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DietrichGebert/ponytail.git"
+    "url": "git+https://github.com/byensitmagnus/ponytail-research-first.git"
   },
   "bugs": {
-    "url": "https://github.com/DietrichGebert/ponytail/issues"
+    "url": "https://github.com/byensitmagnus/ponytail-research-first/issues"
   },
   "main": "./.opencode/plugins/ponytail.mjs",
   "exports": {
