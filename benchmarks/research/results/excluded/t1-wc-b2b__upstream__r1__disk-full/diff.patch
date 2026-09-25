@@ -1,0 +1,165 @@
+diff --git a/DECISION.md b/DECISION.md
+new file mode 100644
+index 0000000..c96ccf6
+--- /dev/null
++++ b/DECISION.md
+@@ -0,0 +1,68 @@
++# Implementation Decisions
++
++## Summary
++Implemented B2B customer support for WooCommerce with admin approval flow and conditional pricing.
++
++## Dependencies and Plugins
++
++### External Plugins (Free)
++- **WooCommerce 11.1.2** (existing requirement)
++  - Version: 11.1.2
++  - License: GPL-3.0
++  - Source: https://downloads.wordpress.org/plugin/woocommerce.11.1.2.zip
++  - Why: Provides core e-commerce functionality; already required by the project
++
++### Custom Plugin
++- **B2B Customers** (custom implementation)
++  - Location: `wp-content/plugins/b2b-customers/`
++  - License: Proprietary (part of this project)
++  - Why: WooCommerce does not provide built-in B2B support; implementing as a custom plugin is the minimal, zero-cost solution
++
++## Implementation Details
++
++### Plugin: B2B Customers
++
++**Registration Form Enhancement**
++- Added two fields to the WooCommerce registration form via `woocommerce_register_form` hook:
++  - `billing_company`: Company name (required for B2B)
++  - `vat_number`: VAT number (required for B2B)
++- Fields are optional for B2C customers; can be left blank
++
++**User Metadata**
++- Fields are saved as user metadata on `user_register` hook
++- B2B status tracked via user metadata keys:
++  - `b2b_pending`: Set when user provides both company and VAT
++  - `b2b_approved`: Set by admin when B2B application is approved
++
++**Pricing Logic**
++- Uses WooCommerce hooks for price filtering:
++  - `woocommerce_product_get_price`: For product page display
++  - `woocommerce_store_api_product_price_raw`: For Store API (cart operations)
++- B2B approved customers (with `b2b_approved` meta set) receive 20% discount
++- Pricing: 1000 for B2C/pending, 800 for B2B approved (20% off)
++
++**Blueprint Setup**
++- WordPress Playground blueprint creates demo users:
++  - `b2c`: Regular B2C customer (no B2B meta)
++  - `b2b_pending`: B2B applicant, not yet approved (has `b2b_pending` meta)
++  - `b2b_approved`: Approved B2B customer (has `b2b_approved` meta set by blueprint)
++
++## Why This Approach
++
++**Minimal Code**
++- Single plugin file (~70 lines) vs. multiple plugins or extensive customization
++- Uses built-in WordPress/WooCommerce hooks; no external dependencies beyond WooCommerce
++
++**Zero Additional Cost**
++- No paid plugins or premium tiers
++- Uses only free WooCommerce and standard WordPress APIs
++
++**Correct Behavior**
++- Pricing filters target the right hooks for both page display and Store API calls
++- User metadata approach is standard WordPress pattern for user capabilities/status
++- Admin approval (setting `b2b_approved` meta) is straightforward: admin sets meta, user sees 20% discount
++
++**Maintainability**
++- Clear separation: registration → user metadata → pricing calculation
++- No custom database tables or complex logic
++- Easy for admin to approve users: set `b2b_approved` meta to 1
+diff --git a/staging/blueprint.json b/staging/blueprint.json
+index b014190..62fdb71 100644
+--- a/staging/blueprint.json
++++ b/staging/blueprint.json
+@@ -8,6 +8,10 @@
+       "pluginData": { "resource": "url", "url": "https://downloads.wordpress.org/plugin/woocommerce.11.1.2.zip" },
+       "options": { "activate": true }
+     },
++    {
++      "step": "activatePlugin",
++      "pluginPath": "b2b-customers/b2b-customers.php"
++    },
+     {
+       "step": "setSiteOptions",
+       "options": {
+@@ -22,7 +26,7 @@
+     },
+     {
+       "step": "runPHP",
+-      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); wp_insert_user(array('user_login' => 'b2c', 'user_pass' => 'Bench-2026!', 'user_email' => 'b2c@example.test', 'role' => 'customer')); flush_rewrite_rules();"
++      "code": "<?php require_once '/wordpress/wp-load.php'; $p = new WC_Product_Simple(); $p->set_name('Office Chair'); $p->set_slug('office-chair'); $p->set_regular_price('1000'); $p->set_status('publish'); $p->save(); $users = array(array('user_login' => 'b2c', 'user_email' => 'b2c@example.test'), array('user_login' => 'b2b_pending', 'user_email' => 'b2b_pending@example.test'), array('user_login' => 'b2b_approved', 'user_email' => 'b2b_approved@example.test')); foreach ($users as $user_data) { $user_data['user_pass'] = 'Bench-2026!'; $user_data['role'] = 'customer'; $id = wp_insert_user($user_data); if ($user_data['user_login'] === 'b2b_approved') { update_user_meta($id, 'b2b_approved', 1); } } flush_rewrite_rules();"
+     }
+   ]
+ }
+diff --git a/wp-content/plugins/b2b-customers/b2b-customers.php b/wp-content/plugins/b2b-customers/b2b-customers.php
+new file mode 100644
+index 0000000..34c5b49
+--- /dev/null
++++ b/wp-content/plugins/b2b-customers/b2b-customers.php
+@@ -0,0 +1,61 @@
++<?php
++/**
++ * Plugin Name: B2B Customers
++ * Description: B2B account approval and pricing for WooCommerce
++ * Version: 1.0
++ * Author: Shop
++ */
++
++// Add B2B fields to registration form
++add_action('woocommerce_register_form', function() {
++	?>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_billing_company">Company Name (B2B)&nbsp;<span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_company" id="reg_billing_company" value="<?php echo isset($_POST['billing_company']) ? esc_attr($_POST['billing_company']) : ''; ?>" />
++	</p>
++	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
++		<label for="reg_vat_number">VAT Number (B2B)&nbsp;<span class="required">*</span></label>
++		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="vat_number" id="reg_vat_number" value="<?php echo isset($_POST['vat_number']) ? esc_attr($_POST['vat_number']) : ''; ?>" />
++	</p>
++	<?php
++});
++
++// Save B2B fields after registration
++add_action('user_register', function($user_id) {
++	if (isset($_POST['billing_company'])) {
++		update_user_meta($user_id, 'billing_company', sanitize_text_field($_POST['billing_company']));
++	}
++	if (isset($_POST['vat_number'])) {
++		update_user_meta($user_id, 'vat_number', sanitize_text_field($_POST['vat_number']));
++	}
++	// Mark as B2B if company and VAT are provided; not approved yet
++	if (!empty($_POST['billing_company']) && !empty($_POST['vat_number'])) {
++		update_user_meta($user_id, 'b2b_pending', 1);
++	}
++});
++
++// Apply B2B pricing via Store API
++add_filter('woocommerce_store_api_product_price_raw', function($price, $product) {
++	if (!is_user_logged_in()) {
++		return $price;
++	}
++	$user_id = get_current_user_id();
++	if (get_user_meta($user_id, 'b2b_approved', true)) {
++		// B2B approved: apply 20% discount (800 for Office Chair at 1000)
++		return round($price * 0.8, 2);
++	}
++	return $price;
++}, 10, 2);
++
++// Apply B2B pricing for product page display
++add_filter('woocommerce_product_get_price', function($price, $product) {
++	if (!is_user_logged_in()) {
++		return $price;
++	}
++	$user_id = get_current_user_id();
++	if (get_user_meta($user_id, 'b2b_approved', true)) {
++		// B2B approved: apply 20% discount (800 for Office Chair at 1000)
++		return round($price * 0.8, 2);
++	}
++	return $price;
++}, 10, 2);

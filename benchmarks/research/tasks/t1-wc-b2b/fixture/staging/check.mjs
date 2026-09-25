@@ -3,6 +3,7 @@
 // pays. Exit code 0 only when every check passes. Usage: npm run check
 import fs from 'node:fs';
 import net from 'node:net';
+import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
@@ -31,14 +32,20 @@ const [cmd, pre] = fs.existsSync(npxCli) ? [process.execPath, [npxCli]] : ['npx'
 // STAGING_URL: check an already running staging site instead of booting one.
 const port = process.env.STAGING_URL ? null : await freePort();
 const base = process.env.STAGING_URL || `http://127.0.0.1:${port}`;
+// Playground unpacks a ~250 MB site into TEMP and removes it only on a clean exit, which
+// taskkill /F never gives it: a private TEMP that stop() deletes keeps the disk from filling.
+const pgTmp = process.env.STAGING_URL ? null : fs.mkdtempSync(path.join(os.tmpdir(), 'pg-check-'));
 const server = process.env.STAGING_URL ? null : spawn(cmd, [...pre, '-y', CLI, 'server', `--blueprint=${path.join(root, 'staging', 'blueprint.json')}`, `--port=${port}`, ...mounts],
-  { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
+  { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, TEMP: pgTmp, TMP: pgTmp, TMPDIR: pgTmp } });
 let log = '';
 server?.stdout.on('data', (d) => { log += d; });
 server?.stderr.on('data', (d) => { log += d; });
 // Synchronous kill: process.exit() follows right after, and an async taskkill never ran,
 // leaving a Playground server (and its PHP worker) running after every check.
-const stop = () => { try { if (server) process.platform === 'win32' ? spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' }) : server.kill(); } catch { /* already gone */ } };
+const stop = () => {
+  try { if (server) process.platform === 'win32' ? spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' }) : server.kill(); } catch { /* already gone */ }
+  if (pgTmp) try { fs.rmSync(pgTmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 }); } catch { /* left in TEMP */ }
+};
 
 // Playground answers HTTP while the blueprint is still running; "Ready!" marks the end.
 async function waitReady(ms = 10 * 60 * 1000) {

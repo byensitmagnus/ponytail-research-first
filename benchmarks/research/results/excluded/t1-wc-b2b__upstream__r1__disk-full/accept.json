@@ -1,0 +1,53 @@
+{
+  "task": "t1-wc-b2b",
+  "checks": [
+    {
+      "id": "blueprint-parses",
+      "req": "deliverable",
+      "pass": true,
+      "detail": "url:https://downloads.wordpress.org/plugin/woocommerce.11.1.2.zip, own-code:b2b-customers"
+    },
+    {
+      "id": "plugins-from-wordpress-org-or-own",
+      "req": "R5",
+      "pass": true,
+      "detail": "url:https://downloads.wordpress.org/plugin/woocommerce.11.1.2.zip, own-code:b2b-customers"
+    },
+    {
+      "id": "price:guest",
+      "pass": true,
+      "detail": "{\"expected\":1000,\"page\":1000,\"cart\":1000}",
+      "req": "R4"
+    },
+    {
+      "id": "price:b2c",
+      "pass": true,
+      "detail": "{\"expected\":1000,\"page\":1000,\"cart\":1000}",
+      "req": "R4"
+    },
+    {
+      "id": "price:b2b_pending",
+      "pass": true,
+      "detail": "{\"expected\":1000,\"page\":1000,\"cart\":1000}",
+      "req": "R2"
+    },
+    {
+      "id": "price:b2b_approved",
+      "pass": true,
+      "detail": "{\"expected\":800,\"page\":800,\"cart\":800}",
+      "req": "R3"
+    },
+    {
+      "id": "register:company-field",
+      "pass": true,
+      "detail": "registration form has a company field",
+      "req": "R1"
+    },
+    {
+      "id": "register:vat-field",
+      "pass": true,
+      "detail": "registration form has a VAT number field",
+      "req": "R1"
+    }
+  ]
+}

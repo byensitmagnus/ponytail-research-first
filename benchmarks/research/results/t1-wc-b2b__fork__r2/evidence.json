@@ -1,0 +1,19 @@
+{
+  "id": "t1-wc-b2b__fork__r2",
+  "searches": [],
+  "pagesOpened": [],
+  "commands": 8,
+  "commandFailures": 0,
+  "registryLookups": [],
+  "thirdPartyReads": [],
+  "fileChanges": 5,
+  "forbiddenTools": [],
+  "leaks": [],
+  "ghWrites": [],
+  "contaminated": false,
+  "researchLine": false,
+  "researchedBeforeFirstChange": false,
+  "deps": [],
+  "decisionCoverage": [],
+  "hasDecision": true
+}
