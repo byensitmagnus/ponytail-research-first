@@ -149,21 +149,46 @@ Enable it under `/plugins` or with `[plugins] enabled = ["ponytail"]` in `~/.gro
 
 ### ZCode
 
-New in this fork: ZCode's hook runner drops any stdout that isn't JSON, so the hooks now answer it with `hookSpecificOutput`. Add to `hooks.events` in `~/.zcode/cli/config.json`:
+New in this fork: ZCode's hook runner drops any stdout that isn't JSON, so the hooks now answer it with `hookSpecificOutput`. Add both entries to `hooks.events` in `~/.zcode/cli/config.json` (keep your existing entries in the same arrays; `UserPromptSubmit` is what makes `/ponytail lite|full|ultra|off` work):
 
 ```json
 "SessionStart": [{ "matcher": "startup|resume|clear|compact", "hooks": [
   { "type": "process", "command": "node", "args": ["/path/to/ponytail-research-first/hooks/ponytail-activate.js"], "timeoutMs": 10000 }
+]}],
+"UserPromptSubmit": [{ "hooks": [
+  { "type": "process", "command": "node", "args": ["/path/to/ponytail-research-first/hooks/ponytail-mode-tracker.js"], "timeoutMs": 10000 }
 ]}]
 ```
 
+For the skills (`/ponytail-research` and friends), link `skills/*` into `~/.zcode/skills/` the same way as for Kimi below.
+
 ### Kimi Code
 
-Kimi CLI's hooks can't inject context (its `SessionStart` output is discarded, `UserPromptSubmit` can only block), so Kimi gets the skills: link or copy `skills/*` into `~/.kimi/skills/`. Kimi then picks `ponytail` and `ponytail-research` by their descriptions.
+Kimi's hooks can't inject context (its `SessionStart` output is discarded, `UserPromptSubmit` can only block), so Kimi gets the skills. Link each folder in `skills/` into `~/.kimi/skills/`:
+
+```bash
+for d in ponytail-research-first/skills/*/; do ln -s "$PWD/$d" ~/.kimi/skills/; done
+```
+
+On Windows, `mklink /J "%USERPROFILE%\.kimi\skills\<name>" "<checkout>\skills\<name>"` per folder. Kimi Desktop runs its own copy of Kimi with a private home: link into `%APPDATA%\kimi-desktop\daimon-share\daimon\runtime\kimi-code\home\.kimi\skills\` too. If you set `merge_all_available_skills = false` in `~/.kimi/config.toml` (default `true`), creating `~/.kimi/skills` hides your `~/.claude/skills` from Kimi. Kimi then offers `ponytail` and `ponytail-research` by their descriptions; nothing loads them automatically.
 
 ### Everything else
 
 Gemini CLI, OpenCode, GitHub Copilot, pi, Hermes, Qoder, Devin, Swival, OpenClaw, Windsurf, Cline, Kiro, Zed, Amp, Jules: same adapters as upstream. Take any command from the [upstream install guide](https://github.com/DietrichGebert/ponytail#install) and swap `DietrichGebert/ponytail` for `byensitmagnus/ponytail-research-first`. The npm package (`@dietrichgebert/ponytail`, used by OpenCode) is upstream's; for this fork point OpenCode at a checkout: `{ "plugin": ["/path/to/ponytail-research-first/.opencode/plugins/ponytail.mjs"] }`. Instruction-only hosts read [`AGENTS.md`](AGENTS.md), which carries rung 7. File map: [docs/agent-portability.md](docs/agent-portability.md).
+
+### What is verified where
+
+Three different mechanisms: a **lifecycle hook** injects the ruleset (with the research rung) into every session; an **auto-loaded rule** file does the same without hooks; a **skill** is only used when the agent picks it from its description.
+
+| Host | Mechanism | Verified on 2026-09-25 | Not verified |
+|---|---|---|---|
+| Codex | lifecycle hooks + skills | clean install from the commands above; fresh isolated sessions quote rung 7 | live `/ponytail off` and level switches (covered by hook tests only) |
+| Claude Code | lifecycle hooks + skills | clean install from the commands above; hook output | a live fresh session (headless CLI not logged in on the test machine) |
+| Cursor | lifecycle hooks | installer keeps other hooks on install, re-install and uninstall; hook output | a live Cursor chat |
+| ZCode | lifecycle hooks | JSON hook output (ZCode drops non-JSON) | a live ZCode session |
+| Grok Build | skills + commands | clean install from the command above | a live session (CLI not signed in) |
+| Kimi CLI / Kimi Desktop | skills | Kimi's own skill discovery finds all seven | a live session (no model configured) |
+| Windsurf, Cline, Copilot, Kiro, Qoder, Antigravity, Zed, Amp, Jules | auto-loaded rule | rule copies match `AGENTS.md` (CI) | everything else |
 
 ## Commands
 

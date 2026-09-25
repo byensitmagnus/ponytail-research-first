@@ -1,7 +1,7 @@
 ---
 name: ponytail-research
 description: "Research-first before building: find what already solves it on GitHub, plugin stores, and competitors, then reuse, adapt, or build."
-homepage: https://github.com/DietrichGebert/ponytail
+homepage: https://github.com/byensitmagnus/ponytail-research-first
 license: MIT
 ---
 
