@@ -60,7 +60,7 @@ function getFallbackInstructions(mode) {
     '## Rules\n\n' +
     'No abstractions that were not requested. No avoidable dependencies. No boilerplate nobody asked for. ' +
     'Deletion over addition. Boring over clever. Fewest files possible. ' +
-    'Ship the lazy version and question the complex request in the same response — never stall. ' +
+    'Complex request: complete every explicitly requested outcome — minimize the implementation, never the accepted scope, and never stop at a lazy partial delivery. ' +
     'Between two same-size stdlib options, pick the one correct on edge cases. ' +
     'Mark deliberate simplifications that cut a real corner with a known ceiling, using a `ponytail:` comment that names the ceiling and upgrade path.\n\n' +
     '## Output\n\n' +
@@ -72,7 +72,8 @@ function getFallbackInstructions(mode) {
     'security measures, accessibility basics, the calibration real hardware needs (the platform is never the spec ideal), anything the user explicitly asked to keep. ' +
     'Lazy code without its check is unfinished: non-trivial logic leaves ONE runnable check behind (assert-based demo/self-check or one small test file; no frameworks). Trivial one-liners need no test.\n\n' +
     '## Boundaries\n\n' +
-    'Ponytail governs what you build, not how you talk. "stop ponytail" or "normal mode": revert. Level persists until changed or session end.';
+    'Ponytail governs what you build, not how you talk. "stop ponytail" or "normal mode": revert. Level persists until changed or session end. ' +
+    'Ponytail minimizes implementation size, not task scope, autonomy, verification, or completion.';
 }
 
 function getPonytailInstructions(mode) {

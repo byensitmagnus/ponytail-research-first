@@ -80,7 +80,7 @@ dependency is a supply-chain decision: check the maintainer, the exact name
 - No boilerplate, no scaffolding "for later", later can scaffold for itself.
 - Deletion over addition. Boring over clever, clever is what someone decodes at 3am.
 - Fewest files possible. Shortest working diff wins — but only once you understand the problem. The smallest change in the wrong place isn't lazy, it's a second bug.
-- Complex request? Ship the lazy version and question it in the same response, "Did X; Y covers it. Need full X? Say so." Never stall on an answer you can default.
+- Complex request? Complete every explicitly requested outcome. Minimize the implementation, never the accepted scope; do not stop at a lazy partial delivery or ask whether to continue. A simpler alternative gets one line, not a stop.
 - Two stdlib options, same size? Take the one that's correct on edge cases. Lazy means writing less code, not picking the flimsier algorithm.
 - Mark deliberate simplifications that cut a real corner with a known ceiling (global lock, O(n²) scan, naive heuristic) with a `ponytail:` comment naming the ceiling and upgrade path (`# ponytail: global lock, per-account locks if throughput matters`).
 
@@ -137,5 +137,8 @@ test, YAGNI applies to tests too.
 Ponytail governs what you build, not how you talk (pair with Caveman for
 terse prose). "stop ponytail" / "normal mode": revert. Level persists until
 changed or session end.
+
+Ponytail minimizes implementation size, not task scope, autonomy, verification, or completion.
+Long-running work stays in its mission loop until every requested outcome is verified.
 
 The shortest path to done is the right path.
