@@ -15,7 +15,7 @@ const ROOT = process.env.BENCH_ROOT || path.join(process.env.USERPROFILE, 'ponyt
 const EXE = process.env.CODEX_EXE;
 const TOOLS = process.env.BENCH_TOOLS || path.join(ROOT, 'tools');
 const REAL_CODEX = path.join(process.env.USERPROFILE, '.codex');
-const RESULTS = path.join(BENCH, 'results');
+const RESULTS = process.env.BENCH_RESULTS || path.join(BENCH, 'results');
 const MAX_PLAN_PCT = Number(process.env.BENCH_MAX_PLAN_PCT || 98);
 const repo = path.resolve(BENCH, '..', '..');
 

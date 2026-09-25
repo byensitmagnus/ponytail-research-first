@@ -80,6 +80,10 @@ tier. Leave one line before the code:
 `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
 Only name a candidate you looked up in this session; one you only remember is
 marked `(from memory, unverified)`.
+Facts about an outside system (an API endpoint and its request and response
+shape, an ID or tax-number format, a license, a version) come from its
+official docs or registry in this session, never from memory; that look-up
+runs even when a lower rung already holds.
 Deep version: `/ponytail-research`.
 
 Example: B2B login with wholesale prices on WooCommerce. GitHub has nothing

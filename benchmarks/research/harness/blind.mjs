@@ -6,7 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { BENCH } from './lib.mjs';
 
-const RESULTS = path.join(BENCH, 'results');
+const RESULTS = process.env.BENCH_RESULTS || path.join(BENCH, 'results');
 const out = path.join(RESULTS, 'blind');
 const keyFile = path.join(out, 'key.json');
 const key = fs.existsSync(keyFile) ? JSON.parse(fs.readFileSync(keyFile, 'utf8')) : {};

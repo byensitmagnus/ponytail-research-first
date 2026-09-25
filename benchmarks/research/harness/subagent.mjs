@@ -15,8 +15,12 @@ import { addedDeps, decisionCoverage, verify } from './evidence.mjs';
 
 const ROOT = process.env.BENCH_ROOT || path.join(os.homedir(), 'ponytail-haiku');
 const VARIANTS_ROOT = process.env.VARIANTS_ROOT || path.join(os.homedir(), 'ponytail-bench');
-const RESULTS = path.join(BENCH, 'results');
-const RULES = path.join(RESULTS, 'haiku-rules');
+// BENCH_RESULTS keeps a later round (another model) apart from the Haiku results and blind key.
+const RESULTS = process.env.BENCH_RESULTS || path.join(BENCH, 'results');
+const RULES = path.join(BENCH, 'results', 'haiku-rules');
+// BENCH_FORK_RULES/BENCH_FORK_SHA: run the fork arm on a newer rule text (e.g. fork-current = 4.10.4).
+const ruleFile = (arm) => (arm === 'fork' && process.env.BENCH_FORK_RULES) || arm;
+const armSha = (arm) => (arm === 'fork' && process.env.BENCH_FORK_SHA) || VARIANTS[arm].sha;
 const PYTHON = path.join(VARIANTS_ROOT, 'tools', 'python312', 'python.exe').replace(/\\/g, '/');
 
 export const ENV_NOTE_HAIKU = [
@@ -51,7 +55,7 @@ function git(work, args) {
 }
 
 export function buildPrompt(task, arm, work) {
-  const ruleText = fs.readFileSync(path.join(RULES, `${arm}.txt`), 'utf8').trim();
+  const ruleText = fs.readFileSync(path.join(RULES, `${ruleFile(arm)}.txt`), 'utf8').trim();
   const taskText = fs.readFileSync(path.join(BENCH, 'tasks', task, 'TASK.md'), 'utf8').trim();
   return [
     '<session-rules>', ruleText, '</session-rules>', '',
@@ -182,8 +186,8 @@ async function finish(id, transcript, tokens, toolUses, ms) {
   fs.mkdirSync(res, { recursive: true });
   if (accepted) fs.writeFileSync(acceptFile, accepted);
   const run = {
-    id, task: meta.task, variant: meta.arm, rep: meta.rep, order: meta.order, launch: meta.launch, variantSha: VARIANTS[meta.arm].sha,
-    agent: 'Claude Haiku 4.5 subagent (general-purpose), orchestrated by a Claude Code session', transcriptFormat: 'claude-code-subagent',
+    id, task: meta.task, variant: meta.arm, rep: meta.rep, order: meta.order, launch: meta.launch, variantSha: armSha(meta.arm), rules: ruleFile(meta.arm),
+    agent: `${process.env.BENCH_MODEL_NAME || 'Claude Haiku 4.5'} subagent (general-purpose), orchestrated by a Claude Code session`, transcriptFormat: 'claude-code-subagent',
     promptSha256: (await import('node:crypto')).createHash('sha256').update(fs.readFileSync(path.join(dir, 'prompt.txt'))).digest('hex'),
     started: stamps[0] || null, ended: stamps[stamps.length - 1] || null, minutes: +(Number(ms) / 60000).toFixed(2),
     usage: { total_tokens: Number(tokens), tool_uses: Number(toolUses), ...modelUsage(lines) },

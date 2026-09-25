@@ -59,6 +59,7 @@ const INVARIANTS = [
   'never bypass licensing or DRM',         // research-first trust carve-out
   'decompile or decrypt unless the license and the law clearly allow it', // lawful competitor study
   'from memory, unverified',               // a Research: line names only looked-up candidates
+  'never from memory',                     // outside facts (endpoints, formats, licenses, versions) are looked up
   'not task scope, autonomy, verification, or completion', // laziness never cuts accepted scope
 ];
 

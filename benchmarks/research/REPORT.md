@@ -228,6 +228,14 @@ orchestrator folder.
   The 4.10.3 rule ("only name a candidate you looked up; mark the rest
   `(from memory, unverified)`") targets this but is not in the pinned fork
   arm, so it is not measured.
+- 4.10.5 adds one rule from these results: outside facts (API endpoints and
+  their request/response shape, ID and tax-number formats, licenses, versions)
+  come from a look-up in the session, never from memory, even when a lower
+  rung holds. Every clean and excluded failure above was of this kind. Not
+  measured. A later round on another model can reuse the Haiku harness with
+  `BENCH_RESULTS`, `BENCH_FORK_RULES=fork-current` and `BENCH_MODEL_NAME`,
+  from an orchestrating session started in a folder without project
+  instructions.
 - Live activation outside Codex (Claude Code, Cursor, Kimi, Grok, ZCode) is
   verified up to installation and hook/skill output only.
 
