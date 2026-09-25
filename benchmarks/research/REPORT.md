@@ -5,8 +5,8 @@ Claude Haiku 4.5 subagents (Amendment 1). All 16 ran and were graded blind,
 but **only pair 1 (2 runs) is clean**: from pair 2 on, the orchestrating
 session's own instruction files, the fork repo's `AGENTS.md` with the research
 rung among them, reached the subagents of **both** arms. Those 14 runs are
-excluded (kept in `results/excluded/`) and pairs 2–8 are re-run with the
-orchestrator in a neutral folder (section 7). Nothing below supports a claim
+excluded (kept in `results/excluded/`) and, by decision, not re-run on Haiku
+(section 7). Nothing below supports a claim
 that the research step makes agents better or worse.
 
 ## 1. State of the fork before this work
@@ -198,14 +198,25 @@ graders used a further 0.51 M tokens of final context. At Haiku 4.5's API list
 price this would be roughly $5 for this round of 16 runs (upstream $2.45, fork $2.39)
 plus $1 for the excluded re-runs.
 
-### Re-run of pairs 2–8
+### Pairs 2–8 are not re-run on Haiku (decision)
 
-Blocked on one step the session cannot take itself: moving the orchestrating
-Claude Code session to the neutral folder `C:\Users\Usmo1\ponytail-haiku`
-(no project instructions) takes effect only once the session is idle and the
-user sends a message. Renaming the files on disk does not help: the session
-keeps the instruction files it loaded. Everything is prepared: `prepare 2`…`8`
-done, prompts unchanged, and `finish` will now reject a contaminated run.
+A clean re-run needs an orchestrating Claude Code session started in a folder
+without project instructions; this session could not be moved (the move was
+requested twice and never applied, and renaming the files on disk does not
+change what a running session hands its subagents). It was also judged not
+worth it: in the 14 excluded runs **both** arms had the research rung in
+context, the fork arm twice, and Haiku still searched in only 2 of them and
+opened nothing. A clean re-run can mainly show that the upstream arm, without
+the rung, also does not research, which would not change the verdict.
+Everything for it stays prepared (`subagent.mjs prepare 2`…`8`, prompts
+unchanged, `finish` rejects a contaminated run) should a publishable
+comparison be wanted.
+
+The more informative next experiment is a stronger model: in the Codex pilot
+both arms searched. Suggested: t1 and t3 (the two tasks where research
+matters most), both arms, two reps, with the current fork rules (4.10.4,
+which carries the look-up rule for `Research:` lines), from a clean
+orchestrator folder.
 
 ## 8. Open problems
 

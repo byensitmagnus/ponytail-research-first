@@ -190,3 +190,10 @@ subagents got only the user's global `CLAUDE.md`, identical in both arms).
   so no new Claude session can switch the hook back on mid-run.
 - Tasks, prompts, acceptance checks, order and grading are unchanged; the t1
   staging check only cleans up its temporary WordPress site now.
+
+Decision after Amendment 2 (same evening, no re-run started): pairs 2–8 are
+not re-run on Haiku. The orchestrating session could not be moved to a folder
+without project instructions, and the excluded runs already had the research
+rung in context in both arms without it changing behaviour (REPORT.md
+section 7). The comparison therefore rests on pair 1 only and is reported as
+inconclusive; a re-run stays prepared.
