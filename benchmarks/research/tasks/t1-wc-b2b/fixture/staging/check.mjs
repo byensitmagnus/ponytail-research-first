@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
 const root = path.resolve(import.meta.dirname, '..');
 const PASSWORD = 'Bench-2026!';
@@ -36,7 +36,9 @@ const server = process.env.STAGING_URL ? null : spawn(cmd, [...pre, '-y', CLI, '
 let log = '';
 server?.stdout.on('data', (d) => { log += d; });
 server?.stderr.on('data', (d) => { log += d; });
-const stop = () => { try { if (server) process.platform === 'win32' ? spawn('taskkill', ['/pid', String(server.pid), '/T', '/F']) : server.kill(); } catch { /* already gone */ } };
+// Synchronous kill: process.exit() follows right after, and an async taskkill never ran,
+// leaving a Playground server (and its PHP worker) running after every check.
+const stop = () => { try { if (server) process.platform === 'win32' ? spawnSync('taskkill', ['/pid', String(server.pid), '/T', '/F'], { stdio: 'ignore' }) : server.kill(); } catch { /* already gone */ } };
 
 // Playground answers HTTP while the blueprint is still running; "Ready!" marks the end.
 async function waitReady(ms = 10 * 60 * 1000) {
@@ -44,7 +46,13 @@ async function waitReady(ms = 10 * 60 * 1000) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
     if (server.exitCode !== null) throw new Error('Playground exited early:\n' + log.slice(-2000));
-    if (/Ready! WordPress is running/.test(log)) return;
+    if (/Ready! WordPress is running/.test(log)) {
+      // The first PHP requests after boot can come back empty; wait until the Store API answers JSON.
+      while (Date.now() < end) {
+        try { await (await fetch(base + '/wp-json/wc/store/v1/products')).json(); return; } catch { /* warming up */ }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
     await new Promise((r) => setTimeout(r, 2000));
   }
   throw new Error('Playground did not finish the blueprint in time:\n' + log.slice(-2000));

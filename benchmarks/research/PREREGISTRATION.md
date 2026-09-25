@@ -131,3 +131,45 @@ rate-limit usage. Estimate all 16 runs from it. Cap: stop if the estimate or
 the running total would use more than 50 percentage points of the weekly plan
 window, or if a single run exceeds 30 minutes (killed by the harness). No new
 paid service, key or subscription is created.
+
+
+## Amendment 1 (2026-09-25, before any run of this agent)
+
+The Codex runs could not proceed: the ChatGPT plan was at 96% of its weekly
+window (pilot and probes are kept in `results/pilot/` and `results/probes/`).
+On the user's instruction the 16 runs use **Claude Haiku 4.5 subagents**
+instead, spawned by the orchestrating Claude Code session. Everything else in
+this document (tasks, ground truth, acceptance checks, order, grading) stands.
+
+What changes, identically for both arms:
+- Agent: Claude Code `general-purpose` subagent, model Haiku 4.5, the session's
+  tools (Bash, PowerShell, file tools, WebSearch, WebFetch). No sandbox: runs
+  use the real shell, in their own folder under `%USERPROFILE%\ponytail-haiku`,
+  away from the repository and from the reference solutions.
+- Ruleset: the exact text each arm's SessionStart hook injects in Claude Code
+  (`results/haiku-rules/{upstream,fork}.txt`, 5,229 vs 7,914 chars, only the
+  fork's has the research rung) is placed at the top of the prompt. The prompts
+  differ only in that block (tested in `tests/research-benchmark.test.js`).
+- The installed Ponytail plugin's SubagentStart hook would inject the fork's
+  ruleset into every subagent; the session's ponytail flag is set to `off`
+  during the runs so it injects nothing. Each transcript is checked for a hook
+  injection (`contaminated`) and for reads of benchmark or reference files
+  (`leaks`); an affected run is reported and re-run.
+- Both arms still receive the user's global Claude Code instructions
+  (`~/.claude/CLAUDE.md`), which cannot be removed from subagents and which
+  contain their own research nudge ("for a significant new subsystem or new
+  dependency: look at maintained GitHub projects"), plus the session's skill
+  list (including `ponytail-research`). The prompt forbids the Skill and Agent
+  tools. **This changes the question**: from "does the fork help a neutral
+  agent" to "does the fork's ruleset add anything on top of this user's own
+  setup". Results are reported as that.
+- `gh` is logged in; read-only use is allowed, writes are forbidden and
+  scanned for (`ghWrites`). HTTPS works from every tool (no sandbox).
+- No wall-clock kill inside a subagent: runs over 30 minutes are stopped by
+  the orchestrator.
+
+Harness fixes made before these runs (t1 staging check): it left the
+Playground server running after every check (async `taskkill` followed by
+`process.exit`), and the first Store API request after boot could return an
+empty body. Both fixed; the reference passes 6/6 twice in a row and no
+server is left behind.
