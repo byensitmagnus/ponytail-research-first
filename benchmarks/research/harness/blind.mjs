@@ -12,7 +12,11 @@ const keyFile = path.join(out, 'key.json');
 const key = fs.existsSync(keyFile) ? JSON.parse(fs.readFileSync(keyFile, 'utf8')) : {};
 // Fields that reveal the arm rather than the quality of the work.
 const REVEALING = ['researchLine', 'researchSkillRead'];
-const scrub = (text) => text.replace(/ponytail[-_ ]?research(-first)?/gi, '[skill]').replace(/\bponytail\b/gi, '[rules]');
+// Run folders are named <task>__<arm>__r<n>; the pilot grader saw the arm in last.md's file links.
+const scrub = (text) => text
+  .replace(/__(fork|upstream)__/gi, '__[arm]__')
+  .replace(/ponytail[-_ ]?research(-first)?/gi, '[skill]')
+  .replace(/\bponytail\b/gi, '[rules]');
 
 for (const id of process.argv.slice(2)) {
   let label = Object.keys(key).find((k) => key[k] === id);

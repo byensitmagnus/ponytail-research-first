@@ -1,0 +1,3 @@
+Implemented `checkVat` in [src/vat.js](C:/Users/Usmo1/[rules]-bench/runs/t3-node-vat__[arm]__r2/work/src/vat.js). It checks the [documented country formats](https://www.revenue.ie/en/customs/documents/vies/vies-traders-manual.pdf) before calling the [European Commission’s VIES service](https://ec.europa.eu/taxation_customs/vies/?locale=eng), and returns `unverified` for service failures or a 10-second timeout. Checkout should apply reverse charge only when `valid === true`.
+
+`npm test` passes: six mocked tests, with no real network calls. No dependencies were added.

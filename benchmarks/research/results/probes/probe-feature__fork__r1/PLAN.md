@@ -1,0 +1,22 @@
+# Cookie consent plan
+
+## Findings and choice
+
+`index.html` currently fetches `gtag.js` before `site.js` runs, and `site.js` immediately configures GA4. The site has one optional purpose: Analytics. Use the existing HTML and JavaScript; **no third-party dependency or plugin** is needed (name/version/licence: none). A CMP would add more code and maintenance than this single choice requires. Do not add anything to `DECISION.md` unless a dependency is actually added.
+
+Research: [Google's basic consent mode](https://developers.google.com/tag-platform/security/concepts/consent-mode) supports blocking the tag until consent; [Klaro](https://github.com/kiprotect/klaro) and [vanilla-cookieconsent](https://www.npmjs.com/package/vanilla-cookieconsent) are broader consent managers, so no dependency fits this one-purpose page better than the browser's built-in APIs.
+
+## Implementation to make later
+
+1. Remove the unconditional Google script from every page head. Load only local `site.js` before consent; check other pages, tag snippets, preloads, and embeds for Google requests. Treat a missing, malformed, or expired preference as **no consent**.
+2. Add an accessible banner with equally prominent **Accept analytics** and **Reject analytics** buttons. Explain that Google Analytics uses cookies and processes visit data for site statistics, link to the cookie/privacy notice, and let visitors use the site without choosing. No preselected opt-in or consent from scrolling/continued use.
+3. Store the explicit choice and its date in first-party storage so it applies across pages. Re-prompt after a defined period (propose six months) or a material purpose/vendor change. Keep a visible **Cookie settings** control on every page to change or withdraw the choice as easily as it was given.
+4. On acceptance, inject `gtag.js` once, then configure GA4. If using Google Consent Mode v2, queue the denied defaults for analytics and ads, update `analytics_storage` to `granted`, and keep ad signals denied before the first config/event. On rejection, never request Google code or send a consent ping. This is Google's *basic* mode; do not use advanced mode's cookieless pings.
+5. On withdrawal, persist rejection, update consent to denied for any loaded tag, stop further GA calls, clear GA cookies that this site can remove, and reload so the tag is absent from the new page. Document that withdrawal stops future collection; it does not undo data already collected.
+6. Before launch, publish the actual cookie/privacy details: operator, Google as recipient, analytics purpose, cookie names/providers/lifetimes, data retention and transfer information, and withdrawal instructions. Inventory the real cookies from the configured GA property; do not invent their values in the banner.
+
+## Verification before launch
+
+Use a clean browser profile and network/storage inspection on every page: no Google request or GA cookie before choice or after rejection; one GA load after acceptance and on later visits; no GA load after withdrawal/reload. Check keyboard access, visible focus, screen-reader labels, mobile layout, storage disabled, and that accept/reject are equally easy. Recheck if new marketing tags are added.
+
+Sources: [Danish Data Protection Authority cookie guidance](https://www.datatilsynet.dk/regler-og-vejledning/gdpr-univers-for-smaa-virksomheder/cookies-og-gdpr); [EDPB Cookie Banner Taskforce report](https://www.edpb.europa.eu/system/files/2023-01/edpb_20230118_report_cookie_banner_taskforce_en.pdf); [EDPB consent guidance](https://www.edpb.europa.eu/sites/default/files/files/file1/edpb_guidelines_202005_consent_en.pdf); [Google Consent Mode setup](https://developers.google.com/tag-platform/security/guides/consent).
