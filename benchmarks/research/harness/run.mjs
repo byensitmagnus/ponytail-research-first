@@ -130,10 +130,22 @@ async function runOne(task, variant, rep, order) {
   const dir = path.join(ROOT, 'runs', id);
   const work = path.join(dir, 'work');
   const codexHome = path.join(dir, 'codex-home');
+  // Unlink the junctions to ~/.codex's sandbox folders first (rmdir never touches a
+  // junction's target), then remove the rest of an earlier run.
+  // (Node 24 does not report junctions as symbolic links; readlink does resolve them.)
+  for (const d of ['.sandbox', '.sandbox-bin', '.sandbox-secrets']) {
+    const link = path.join(codexHome, d);
+    let isLink = false;
+    try { fs.readlinkSync(link); isLink = true; } catch { /* missing or a real folder */ }
+    if (isLink) execSync(`cmd /c rmdir "${link}"`);
+  }
   fs.rmSync(dir, { recursive: true, force: true });
   copyTree(path.join(ROOT, 'variants', variant, 'codex-home'), codexHome);
   fs.copyFileSync(path.join(REAL_CODEX, 'auth.json'), path.join(codexHome, 'auth.json'));
   for (const d of ['.sandbox', '.sandbox-bin', '.sandbox-secrets']) junction(path.join(codexHome, d), path.join(REAL_CODEX, d));
+  // The sandbox users may traverse and stat the run folder and its parent (Node's realpath
+  // needs it) but get no read access to anything in them, so codex-home stays private.
+  for (const p of [path.join(ROOT, 'runs'), dir]) execSync(`icacls "${p}" /grant *S-1-5-32-545:(RA,X)`, { stdio: 'ignore' });
   copyTree(path.join(BENCH, 'tasks', task, 'fixture'), work);
   fs.appendFileSync(path.join(work, '.gitignore'), '\n.bench/\nnode_modules/\n.venv/\n__pycache__/\ndist/\n');
   git(work, ['init', '-q']); git(work, ['add', '-A']); git(work, ['commit', '-q', '-m', 'baseline']);

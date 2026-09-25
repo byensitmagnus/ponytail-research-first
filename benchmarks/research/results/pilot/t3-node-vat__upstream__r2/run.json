@@ -1,0 +1,62 @@
+{
+  "id": "t3-node-vat__upstream__r2",
+  "task": "t3-node-vat",
+  "variant": "upstream",
+  "rep": 2,
+  "order": 1,
+  "variantSha": "e3ba2aa",
+  "codex": "codex-cli 0.155.0-alpha.16.4",
+  "model": "gpt-6-sol",
+  "reasoning": "medium",
+  "sandbox": "workspace-write (Windows elevated sandbox), network on",
+  "disabledFeatures": [
+    "apps",
+    "browser_use",
+    "computer_use",
+    "memories"
+  ],
+  "promptSha256": "30abbe0501623d75ce2f069a3e2eeb5eb98785313c5be7639623a967829969e8",
+  "started": "2026-09-25T15:42:22.750Z",
+  "ended": "2026-09-25T15:47:29.772Z",
+  "minutes": 5.12,
+  "exit": 0,
+  "killed": false,
+  "usage": {
+    "input_tokens": 1393556,
+    "cached_input_tokens": 1331456,
+    "output_tokens": 8333,
+    "reasoning_output_tokens": 1995,
+    "turns": 1
+  },
+  "rateLimits": {
+    "at": "2026-09-25T15:47:28.950Z",
+    "limit_id": "codex",
+    "limit_name": null,
+    "primary": {
+      "used_percent": 96,
+      "window_minutes": 10080,
+      "resets_at": 1790413921
+    },
+    "secondary": null,
+    "credits": {
+      "has_credits": false,
+      "unlimited": false,
+      "balance": "0"
+    },
+    "individual_limit": null,
+    "spend_control_reached": null,
+    "plan_type": "pro",
+    "rate_limit_reached_type": null
+  },
+  "planUsedPctBefore": 96,
+  "diff": {
+    "files": 2,
+    "added": 123,
+    "deleted": 2,
+    "numstat": [
+      "61 2 src/vat.js",
+      "62 0 test/vat.test.js"
+    ]
+  },
+  "stderrTail": "2026-09-25T15:44:21.630300Z ERROR codex_core::tools::router: error=apply_patch verification failed: invalid patch: multiple operations target C:\\Users\\Usmo1\\ponytail-bench\\runs\\t3-node-vat__upstream__r2\\work\\src\\vat.js\n"
+}
