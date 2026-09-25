@@ -1,0 +1,37 @@
+{
+  "codex": "codex-cli 0.155.0-alpha.16.4",
+  "agent": {
+    "model": "gpt-6-sol",
+    "reasoning": "medium",
+    "timeoutMin": 30,
+    "sandbox": "workspace-write (Windows elevated sandbox), network on",
+    "disabledFeatures": [
+      "apps",
+      "browser_use",
+      "computer_use",
+      "memories"
+    ]
+  },
+  "variants": {
+    "upstream": {
+      "sha": "e3ba2aa",
+      "version": "4.10.0",
+      "rung7Research": false,
+      "researchSkill": false,
+      "hookInjectsResearchRung": false,
+      "hookInjectedChars": 5229,
+      "globalInstructions": false,
+      "otherPlugins": []
+    },
+    "fork": {
+      "sha": "210b272",
+      "version": "4.10.2",
+      "rung7Research": true,
+      "researchSkill": true,
+      "hookInjectsResearchRung": true,
+      "hookInjectedChars": 7914,
+      "globalInstructions": false,
+      "otherPlugins": []
+    }
+  }
+}
