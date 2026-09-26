@@ -7,7 +7,7 @@ license: MIT
 
 Find the thing that already exists before writing the thing. The goal is the
 smallest amount of new code: install it, adapt it, or copy its principle.
-One pass, about ten minutes, then a decision.
+One pass, about twenty minutes including one competitor teardown, then a decision.
 
 ## 1. Pin the need
 
@@ -58,6 +58,24 @@ battle-tested spec. Study what you can lawfully see as a user:
   config, JSON, or SQLite it writes under `%APPDATA%`,
   `~/Library/Application Support`, or `~/.config`. Code it ships as plain
   source (a plugin zip, unobfuscated JavaScript) can be read.
+- Mobile app: the store listing (screenshots, description, version history,
+  permissions). App Store builds are encrypted; don't try to crack them.
+
+Competitor teardown, for the one or two products that matter most:
+
+1. Download the build from the vendor or the official store; keep the URL
+   and a SHA-256 of what you got.
+2. Unpack without running: `7z l` / `7z x` for installers (NSIS, Inno,
+   MSI, zip), then `npx @electron/asar extract resources/app.asar out/` for
+   Electron apps. Look for `package.json`, the renderer HTML, bundles, and
+   the config, manifest, or SQL files it ships.
+3. Read what ships in readable form: find the handlers for your feature
+   (search the bundle for the feature's words, file paths, registry keys,
+   IPC channel names) and note file and function names.
+4. Capture the UI into the working folder: screenshots of the running app,
+   the renderer HTML opened in a browser, or the store listing images.
+5. Running or installing the build changes the machine: ask the user first,
+   unless you are in a sandbox or VM.
 - Decompiling binaries, deobfuscating, or decrypting is not assumed allowed.
   In the EU a lawful user may observe, study, and test a program while
   running it (Directive 2009/24/EC, Art. 5(3)); decompiling is allowed only
@@ -104,8 +122,9 @@ A dependency is also cost: a few lines you can write still beat a package
 
 - Copy code only when the license allows it, with attribution. Proprietary
   or unlicensed code is for learning the principle, never for pasting.
-- Official download sources only. Run nothing untrusted outside a sandbox or
-  VM; reading files needs no execution.
+- Official download sources only. Reading and unpacking need no execution
+  and no permission; ask the user before running or installing a download,
+  unless you are in a sandbox or VM.
 - Never bypass licensing, DRM, or obfuscation, and never break a site's terms
   to scrape it. No decompiling or decrypting unless the license and the law
   clearly allow it.
@@ -122,6 +141,7 @@ A dependency is also cost: a few lines you can write still beat a package
 | <owner/repo or slug> | <tag, version, or sha> | ★ / installs, last push | <license> | covers X, not Y |
 
 Read: <files or functions read, at that version>
+Teardown: <product@version, download URL, sha256> — unpacked: <what>; handlers: <files/functions>; UI: <screenshot paths>
 Principle: <two lines: data model, extension point, edge cases>
 Decision: reuse | adapt | inspired by | build — <why it fits this task, not just its stars>
 Next: <smallest integration step>

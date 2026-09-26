@@ -54,12 +54,19 @@ Before building a feature, look where it most likely already exists:
 - **Plugin and app stores:** WordPress.org, Shopify App Store, npm, PyPI, VS
   Code Marketplace. Active installs, rating, and last update are the signal;
   download the plugin and read its source.
-- **Competitors:** a product that already has the feature is a free spec.
-  Study what you can lawfully see as a user (its UI and flows, page source,
-  plugin zips, the config it writes) for the data model, flow, and UX, then
-  write your own.
+- **Competitors:** a product that already has the feature is a free spec,
+  so look past GitHub. Name the two or three products people use for this
+  and look at what they ship, not just their website: download the app,
+  plugin, or extension from the vendor or the official store, unpack it
+  (installers and Electron `app.asar` are archives: `7z x`,
+  `npx @electron/asar extract`), read what ships in readable form
+  (JavaScript, manifests, config, SQL, resources), and capture the UI
+  (screenshots of the running app, or the store listing). Name the files and
+  handlers you learned from, take the data model, flow, edge cases, and UX,
+  then write your own.
 
-Time-box it: 3–5 searches, about ten minutes. Stars pick the candidates, the
+Time-box it: 3–5 searches and one competitor teardown, about twenty
+minutes. Stars pick the candidates, the
 code decides: read the part that does the work and check what sits in a paid
 tier. Leave one line before the code:
 `Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
@@ -78,9 +85,13 @@ native B2B features for the plan first (rung 4).
 
 Research is lazy about writing, never about trust: copy code only when its
 license allows it and keep the attribution; proprietary code teaches the
-principle, it is never pasted. Download from official sources only, run
-nothing untrusted outside a sandbox, never bypass licensing or DRM, and don't
-decompile or decrypt unless the license and the law clearly allow it. A new
+principle, it is never pasted. Download from official sources only. Reading
+and unpacking a download needs no permission; running or installing one
+changes the machine, so ask the user first unless you are in a sandbox or VM;
+never bypass licensing or DRM, and don't
+decompile or decrypt unless the license and the law clearly allow it (in the
+EU a licensed user may study a program while running it, and decompile only
+for interoperability). A new
 dependency is a supply-chain decision: check the maintainer, the exact name
 (typosquats), and install scripts first.
 
