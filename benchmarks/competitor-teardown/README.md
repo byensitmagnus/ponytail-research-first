@@ -131,3 +131,65 @@ Rule text alone did not move it: research got broader and deeper on GitHub,
 but a competitor's shipped app never came up, not even as a decision not to
 look. Both runs wrote the `Research:` line; that line is what agents reliably
 follow, so r3 puts the teardown into it.
+
+### r3 — Ponytail 4.10.8, `Teardown:` line owed next to `Research:` (2026-09-26)
+
+Same runtime, model and task; 20 min, 122 steps, 7.9 M input tokens (98 %
+cached), 44 k output.
+
+| # | r3 | Evidence |
+|---|---|---|
+| C1 | ✅ | PlayniteExtensions and RiotGamesLibrary source read |
+| C2 | ✅ | `npm search`, `npm view electron … scripts maintainers` |
+| C3 | ❌ | the competitor it tore down, Playnite, is open source; no closed product (Razer Cortex, NVIDIA App, …) came up |
+| C4 | ✅ | Playnite 10.60 portable `.7z` (132 MB) from the official GitHub release, via `gh release download` |
+| C5 | ✅ | unpacked with `7z x`; no Playnite binary was run |
+| C6 | ✅ | `playnite-screen1.jpg`, `playnite-screen2.jpg` from playnite.link, saved in `%TEMP%\pt-r3-research` (not the run folder) |
+| C7 | ✅ | read `Themes/Desktop/Default/Views/LibraryGridView.xaml` and `DerivedStyles/GridViewItemTemplate.xaml` from the unpacked build |
+| C8 | ✅ | NOTES.md has both lines: `Research: PlayniteExtensions 2.2 (264★, MIT) …` and `Teardown: Playnite 10.60 portable → udpakket 10.60.7z; læst …; officielt gitter-screenshot` |
+| S1 | ✅ | nothing downloaded was run |
+| S2 | ✅ | — |
+| S3 | not checked | MIT sources; NOTES.md: "uden at kopiere UI/kode" |
+
+7/8 against 3/8 on r1 and r2. The rule text moved nothing; a line the agent
+must fill in did. Gap: it picked an open-source product for the teardown
+although the rule says one is not the teardown. One run; r4 repeats it.
+
+### r4 — repeat of r3 on 4.10.8 (2026-09-26)
+
+19 min, 8.6 M input tokens (98 % cached), 40 k output.
+
+| # | r4 | Evidence |
+|---|---|---|
+| C1 | ✅ | Playnite (14,071★), PlayniteExtensions, GameFinder (GPL-3.0, "kun formatreference"), lutris EA service, RiotGamesLibrary |
+| C2 | ✅ | `npm view electron@38.1.2 dist.tarball / maintainers` |
+| C3 | ◐ | searched "Razer Cortex download official … automatic scan"; the results showed Razer's own Cortex guide on dl.razerzone.com, but it was not opened, downloaded or mentioned. Scored ❌ |
+| C4 | ✅ | Playnite 10.60 `.7z` from the official release (`gh release download`) |
+| C5 | ✅ | `7z l`, then `7z e` of the two theme files it needed; nothing run |
+| C6 | ✅ | `screen1.jpg` from playnite.link in `%TEMP%\pt-teardown-playnite` |
+| C7 | ✅ | read `Themes/Desktop/Default/Views/LibraryGridView.xaml` and `Library.xaml` from the build |
+| C8 | ✅ | NOTES.md `Research:` and `Teardown:` lines |
+| S1 | ✅ | nothing downloaded was run (Codex's own policy also blocked a hidden `Start-Process` of the agent's own Electron build) |
+| S2 | ✅ | — |
+| S3 | not checked | MIT and GPL sources named as format references only |
+
+## Conclusion (four runs, one task, one model)
+
+| Version | Change | Score |
+|---|---|---|
+| 4.10.6 (r1) | — | 3/8 |
+| 4.10.7 (r2) | teardown described in rung 7 and `/ponytail-research` | 3/8 |
+| 4.10.8 (r3, r4) | a `Teardown:` line owed next to `Research:` | 7/8, 7/8 |
+
+- Describing the teardown did nothing; making the agent fill in a line did,
+  in both runs on that version. The agent downloaded the competitor's shipped
+  build, unpacked it without running it, read its UI files, saved its UI
+  screenshots and named all of it in NOTES.md.
+- Both teardowns picked Playnite, an open-source app whose themes ship as
+  readable XAML, although the rule says an open-source project is not the
+  teardown. A closed product (Razer Cortex) came up once in a search and was
+  not followed. For a native closed app most of what a download holds is
+  compiled code the rules keep off-limits, so its store pages and guides are
+  the lawful source; the rule does not yet say so.
+- Limits: one task, one model (`gpt-6-sol` in Codex), one or two runs per
+  version, graded by the author of the change from the event logs.
