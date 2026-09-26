@@ -4,12 +4,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Za-z]:)/, '$1');
+const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.env.TEARDOWN_ROOT || 'C:/Users/Usmo1/pt-teardown';
 const [runId, cli = 'codex', budget = '15'] = process.argv.slice(2);
 if (!runId || !['codex', 'claude'].includes(cli)) { console.error('usage: node run.mjs <runId> [codex|claude] [budgetUsd]'); process.exit(2); }
 
+const prompt = fs.readFileSync(path.join(here, 'prompt.txt'), 'utf8');
 const dir = path.join(ROOT, runId);
 if (fs.existsSync(dir)) { console.error(`${dir} exists; pick a new run id`); process.exit(2); }
 fs.mkdirSync(dir, { recursive: true });
@@ -32,6 +34,8 @@ if (cli === 'claude') {
 const out = fs.openSync(path.join(ROOT, `${runId}.events.jsonl`), 'w');
 const err = fs.openSync(path.join(ROOT, `${runId}.stderr.log`), 'w');
 const started = Date.now();
-const child = spawn(cli, args, { cwd: dir, stdio: ['pipe', out, err], shell: true });
-child.stdin.end(fs.readFileSync(path.join(here, 'prompt.txt'), 'utf8'));
+// The Codex desktop app ships a newer codex.exe than the one on PATH; the PATH build rejects its default model.
+const exe = cli === 'codex' ? (process.env.CODEX_EXE || 'codex') : 'claude';
+const child = spawn(`"${exe}"`, args, { cwd: dir, stdio: ['pipe', out, err], shell: true });
+child.stdin.end(prompt);
 child.on('exit', (code) => console.log(`${runId} (${cli}): exit ${code} after ${Math.round((Date.now() - started) / 60000)} min`));

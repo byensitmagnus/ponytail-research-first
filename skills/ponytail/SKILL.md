@@ -81,10 +81,15 @@ Before building a feature, look where it most likely already exists:
   then write your own.
 
 Time-box it: 3–5 searches and one competitor teardown, about twenty
-minutes. Stars pick the candidates, the
-code decides: read the part that does the work and check what sits in a paid
-tier. Leave one line before the code:
-`Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`.
+minutes. Stars pick the candidates, the code decides: read the part that
+does the work and check what sits in a paid tier. Leave two lines before the
+code:
+`Research: <candidate@version, ★/installs, license> → reuse | adapt | inspired by | nothing fits, building`
+`Teardown: <product@version, download URL> → unpacked <what>, read <files/handlers>, UI <screenshot path>`
+The teardown line is owed even when GitHub already answered the question:
+open source shows how it can be done, a shipped product shows what users
+get. An open-source project is not the teardown. No shipped product for
+this, or running it needs the user's go-ahead → `Teardown: none — <why>`.
 Only name a candidate you looked up in this session; one you only remember is
 marked `(from memory, unverified)`.
 Facts about an outside system (an API endpoint and its request and response

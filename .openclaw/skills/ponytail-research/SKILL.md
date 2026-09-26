@@ -141,7 +141,7 @@ A dependency is also cost: a few lines you can write still beat a package
 | <owner/repo or slug> | <tag, version, or sha> | ★ / installs, last push | <license> | covers X, not Y |
 
 Read: <files or functions read, at that version>
-Teardown: <product@version, download URL, sha256> — unpacked: <what>; handlers: <files/functions>; UI: <screenshot paths>
+Teardown: <product@version, download URL, sha256> — unpacked: <what>; handlers: <files/functions>; UI: <screenshot paths>   (or: Teardown: none — <why>; an open-source project is not the teardown)
 Principle: <two lines: data model, extension point, edge cases>
 Decision: reuse | adapt | inspired by | build — <why it fits this task, not just its stars>
 Next: <smallest integration step>
