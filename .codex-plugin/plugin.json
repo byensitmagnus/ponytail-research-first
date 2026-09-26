@@ -1,10 +1,10 @@
 {
   "name": "ponytail",
-  "version": "4.10.5",
-  "description": "Lazy senior dev mode. Forces the simplest, shortest solution that actually works: YAGNI, stdlib first, no unrequested abstractions.",
+  "version": "4.10.6",
+  "description": "Lazy senior dev mode, research first: the simplest solution that works, after checking what already exists, with outside facts looked up instead of written from memory. Fork of Dietrich Gebert's Ponytail.",
   "author": {
-    "name": "Dietrich Gebert",
-    "url": "https://github.com/DietrichGebert"
+    "name": "Byens IT",
+    "url": "https://github.com/byensitmagnus"
   },
   "homepage": "https://github.com/byensitmagnus/ponytail-research-first",
   "repository": "https://github.com/byensitmagnus/ponytail-research-first",
@@ -13,10 +13,10 @@
   "skills": "./skills/",
   "hooks": "./hooks/claude-codex-hooks.json",
   "interface": {
-    "displayName": "Ponytail",
-    "shortDescription": "Lazy senior developer mode",
-    "longDescription": "Prefer YAGNI, the standard library, native platform features, and the smallest correct implementation.",
-    "developerName": "Dietrich Gebert",
+    "displayName": "Ponytail Research-First",
+    "shortDescription": "Lazy senior dev mode, research first",
+    "longDescription": "Prefer YAGNI, the standard library, native platform features, and the smallest correct implementation. Before building a feature, check GitHub, plugin stores and existing products. Look up API endpoints, formats, licences and versions instead of writing them from memory. Fork of Dietrich Gebert's Ponytail.",
+    "developerName": "Byens IT",
     "category": "Productivity",
     "capabilities": ["Instructions", "Lifecycle hooks"],
     "websiteURL": "https://github.com/byensitmagnus/ponytail-research-first",
