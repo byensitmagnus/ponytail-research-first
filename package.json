@@ -1,6 +1,6 @@
 {
   "name": "ponytail-research-first",
-  "version": "4.10.5",
+  "version": "4.10.6",
   "private": true,
   "description": "Lazy senior dev mode for AI agents. The best code is the code you never wrote.",
   "keywords": ["opencode-plugin", "opencode", "ponytail", "pi-package", "pi", "skills", "qoder"],

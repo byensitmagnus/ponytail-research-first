@@ -1,10 +1,10 @@
 {
   "name": "ponytail",
-  "version": "4.10.5",
-  "description": "Lazy senior dev mode. Forces the simplest, shortest solution that actually works: YAGNI, stdlib first, no unrequested abstractions.",
+  "version": "4.10.6",
+  "description": "Lazy senior dev mode, research first: the simplest solution that works, after checking what already exists, with outside facts looked up instead of written from memory. Fork of Dietrich Gebert's Ponytail.",
   "author": {
-    "name": "Dietrich Gebert",
-    "url": "https://github.com/DietrichGebert"
+    "name": "Byens IT",
+    "url": "https://github.com/byensitmagnus"
   },
   "hooks": "./hooks/claude-codex-hooks.json"
 }
